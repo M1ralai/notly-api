@@ -1,0 +1,3814 @@
+basePath: /
+definitions:
+  github_com_M1ralai_notly-api_internal_modules_auth_dto.AuthResponse:
+    properties:
+      expires_at:
+        type: string
+      refresh_token:
+        type: string
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_auth_dto.UserResponse'
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_auth_dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_auth_dto.LogoutRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_auth_dto.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_auth_dto.RegisterRequest:
+    properties:
+      email:
+        type: string
+      full_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      timezone:
+        type: string
+      turnstile_token:
+        type: string
+    required:
+    - email
+    - password
+    - turnstile_token
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_auth_dto.ResendCodeRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_auth_dto.UserResponse:
+    properties:
+      avatar_url:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: integer
+      is_verified:
+        type: boolean
+      timezone:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_auth_dto.VerifyEmailRequest:
+    properties:
+      code:
+        type: string
+      email:
+        type: string
+    required:
+    - code
+    - email
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_calendar_dto.AuthURLResponse:
+    properties:
+      auth_url:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_calendar_dto.GoogleCallbackRequest:
+    properties:
+      code:
+        type: string
+      state:
+        type: string
+    required:
+    - code
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_calendar_dto.IntegrationResponse:
+    properties:
+      calendar_id:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      last_sync_at:
+        type: string
+      provider:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_calendar_dto.QueueSyncRequest:
+    properties:
+      action:
+        enum:
+        - create
+        - update
+        - delete
+        type: string
+      event_id:
+        type: integer
+    required:
+    - action
+    - event_id
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_calendar_dto.SyncStatusResponse:
+    properties:
+      integrations:
+        items:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_calendar_dto.IntegrationResponse'
+        type: array
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_course_dto.ComponentResponse:
+    properties:
+      achieved_score:
+        type: number
+      completion_date:
+        type: string
+      course_id:
+        type: integer
+      created_at:
+        type: string
+      display_order:
+        type: integer
+      due_date:
+        type: string
+      id:
+        type: integer
+      is_completed:
+        type: boolean
+      max_score:
+        type: number
+      name:
+        type: string
+      notes:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      weight:
+        type: number
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_course_dto.CourseResponse:
+    properties:
+      code:
+        type: string
+      color:
+        type: string
+      components:
+        items:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.ComponentResponse'
+        type: array
+      created_at:
+        type: string
+      credits:
+        type: number
+      final_grade:
+        type: string
+      id:
+        type: integer
+      instructor:
+        type: string
+      is_active:
+        type: boolean
+      is_completed:
+        type: boolean
+      name:
+        type: string
+      schedules:
+        items:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.ScheduleResponse'
+        type: array
+      semester:
+        $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.SemesterInfo'
+      semester_id:
+        type: integer
+      syllabus_url:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_course_dto.CreateComponentRequest:
+    properties:
+      achieved_score:
+        type: number
+      course_id:
+        type: integer
+      display_order:
+        type: integer
+      due_date:
+        type: string
+      max_score:
+        type: number
+      name:
+        maxLength: 255
+        type: string
+      notes:
+        type: string
+      type:
+        maxLength: 50
+        type: string
+      weight:
+        type: number
+    required:
+    - course_id
+    - name
+    - type
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_course_dto.CreateCourseRequest:
+    properties:
+      code:
+        maxLength: 50
+        type: string
+      color:
+        maxLength: 7
+        type: string
+      credits:
+        type: number
+      instructor:
+        maxLength: 255
+        type: string
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+      semester_id:
+        type: integer
+      syllabus_url:
+        maxLength: 500
+        type: string
+      type:
+        maxLength: 50
+        type: string
+    required:
+    - name
+    - semester_id
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_course_dto.CreateScheduleRequest:
+    properties:
+      course_id:
+        type: integer
+      day_of_week:
+        enum:
+        - Monday
+        - Tuesday
+        - Wednesday
+        - Thursday
+        - Friday
+        - Saturday
+        - Sunday
+        type: string
+      end_time:
+        type: string
+      location:
+        maxLength: 255
+        type: string
+      notification_type:
+        type: string
+      notifications_enabled:
+        type: boolean
+      reminder_time:
+        type: integer
+      start_time:
+        type: string
+      sync_to_calendar:
+        type: boolean
+    required:
+    - course_id
+    - day_of_week
+    - end_time
+    - start_time
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_course_dto.ScheduleResponse:
+    properties:
+      course_id:
+        type: integer
+      created_at:
+        type: string
+      day_of_week:
+        type: string
+      end_time:
+        type: string
+      id:
+        type: integer
+      location:
+        type: string
+      start_time:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_course_dto.SemesterInfo:
+    properties:
+      end_date:
+        type: string
+      id:
+        type: integer
+      is_current:
+        type: boolean
+      name:
+        type: string
+      start_date:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_course_dto.UpdateComponentRequest:
+    properties:
+      achieved_score:
+        type: number
+      completion_date:
+        type: string
+      display_order:
+        type: integer
+      due_date:
+        type: string
+      is_completed:
+        type: boolean
+      max_score:
+        type: number
+      name:
+        maxLength: 255
+        type: string
+      notes:
+        type: string
+      type:
+        maxLength: 50
+        type: string
+      weight:
+        type: number
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_course_dto.UpdateCourseRequest:
+    properties:
+      code:
+        maxLength: 50
+        type: string
+      color:
+        maxLength: 7
+        type: string
+      credits:
+        type: number
+      final_grade:
+        maxLength: 10
+        type: string
+      instructor:
+        maxLength: 255
+        type: string
+      is_active:
+        type: boolean
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+      semester_id:
+        type: integer
+      syllabus_url:
+        maxLength: 500
+        type: string
+      type:
+        maxLength: 50
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_course_dto.UpdateScheduleRequest:
+    properties:
+      day_of_week:
+        enum:
+        - Monday
+        - Tuesday
+        - Wednesday
+        - Thursday
+        - Friday
+        - Saturday
+        - Sunday
+        type: string
+      end_time:
+        type: string
+      location:
+        maxLength: 255
+        type: string
+      notification_type:
+        type: string
+      notifications_enabled:
+        type: boolean
+      reminder_time:
+        type: integer
+      start_time:
+        type: string
+      sync_to_calendar:
+        type: boolean
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_dashboard_dto.DashboardResponse:
+    properties:
+      habits:
+        items:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_dashboard_dto.HabitResponse'
+        type: array
+      life_areas:
+        items:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_dashboard_dto.LifeAreaResponse'
+        type: array
+      stats:
+        $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_dashboard_dto.TaskStatsResponse'
+      tasks:
+        items:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_dashboard_dto.TaskResponse'
+        type: array
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_dashboard_dto.HabitResponse:
+    properties:
+      bestStreak:
+        type: integer
+      completed_today:
+        type: boolean
+      created_at:
+        type: string
+      current_streak:
+        type: integer
+      description:
+        type: string
+      frequency:
+        type: string
+      frequencyDays:
+        items:
+          type: string
+        type: array
+      icon:
+        type: string
+      id:
+        type: integer
+      intervalDays:
+        type: integer
+      is_active:
+        type: boolean
+      life_area_id:
+        type: integer
+      longest_streak:
+        type: integer
+      reminderTime:
+        type: string
+      skipped_today:
+        type: boolean
+      target_count:
+        type: integer
+      timeOfDay:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_dashboard_dto.LifeAreaResponse:
+    properties:
+      color:
+        type: string
+      created_at:
+        type: string
+      display_order:
+        type: integer
+      icon:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_dashboard_dto.TaskResponse:
+    properties:
+      actual_duration_min:
+        type: integer
+      actual_end:
+        type: string
+      actual_start:
+        type: string
+      completed_at:
+        type: string
+      completed_subtasks:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      due_date:
+        type: string
+      estimated_duration_min:
+        type: integer
+      estimated_end:
+        type: string
+      estimated_start:
+        type: string
+      id:
+        type: integer
+      is_completed:
+        type: boolean
+      is_overdue:
+        type: boolean
+      parent_task_id:
+        type: integer
+      priority:
+        type: string
+      progress_percentage:
+        type: number
+      title:
+        type: string
+      total_subtasks:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_dashboard_dto.TaskStatsResponse:
+    properties:
+      completed_today:
+        type: integer
+      due_today:
+        type: integer
+      due_tomorrow:
+        type: integer
+      overdue:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_event_dto.CreateEventRequest:
+    properties:
+      description:
+        type: string
+      end_time:
+        type: string
+      is_all_day:
+        type: boolean
+      is_recurring:
+        type: boolean
+      life_area_id:
+        type: integer
+      location:
+        type: string
+      recurrence:
+        type: string
+      start_time:
+        type: string
+      title:
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - start_time
+    - title
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_event_dto.EventResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      duration_min:
+        type: integer
+      end_time:
+        type: string
+      id:
+        type: integer
+      is_all_day:
+        type: boolean
+      is_recurring:
+        type: boolean
+      life_area_id:
+        type: integer
+      location:
+        type: string
+      recurrence:
+        type: string
+      start_time:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_event_dto.UpdateEventRequest:
+    properties:
+      description:
+        type: string
+      end_time:
+        type: string
+      is_all_day:
+        type: boolean
+      life_area_id:
+        type: integer
+      location:
+        type: string
+      start_time:
+        type: string
+      title:
+        maxLength: 255
+        minLength: 1
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_goal_dto.CreateGoalRequest:
+    properties:
+      description:
+        type: string
+      life_area_id:
+        type: integer
+      priority:
+        enum:
+        - low
+        - medium
+        - high
+        type: string
+      target_date:
+        type: string
+      title:
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - title
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_goal_dto.GoalResponse:
+    properties:
+      completed_at:
+        type: string
+      completed_milestones:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      is_completed:
+        type: boolean
+      life_area_id:
+        type: integer
+      priority:
+        type: string
+      progress_percentage:
+        type: number
+      target_date:
+        type: string
+      title:
+        type: string
+      total_milestones:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_goal_dto.UpdateGoalRequest:
+    properties:
+      description:
+        type: string
+      is_completed:
+        type: boolean
+      life_area_id:
+        type: integer
+      priority:
+        enum:
+        - low
+        - medium
+        - high
+        type: string
+      target_date:
+        type: string
+      title:
+        maxLength: 255
+        minLength: 1
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_habit_dto.CreateHabitRequest:
+    properties:
+      description:
+        type: string
+      frequency:
+        enum:
+        - daily
+        - weekly
+        - custom
+        type: string
+      frequencyDays:
+        items:
+          type: string
+        type: array
+      icon:
+        type: string
+      intervalDays:
+        type: integer
+      life_area_id:
+        type: integer
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+      reminderTime:
+        type: string
+      target_count:
+        type: integer
+      targetDays:
+        type: integer
+      timeOfDay:
+        type: string
+    required:
+    - frequency
+    - name
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_habit_dto.HabitResponse:
+    properties:
+      bestStreak:
+        type: integer
+      completed_today:
+        type: boolean
+      created_at:
+        type: string
+      current_streak:
+        type: integer
+      description:
+        type: string
+      frequency:
+        type: string
+      frequencyDays:
+        items:
+          type: string
+        type: array
+      icon:
+        type: string
+      id:
+        type: integer
+      intervalDays:
+        type: integer
+      is_active:
+        type: boolean
+      life_area_id:
+        type: integer
+      longest_streak:
+        type: integer
+      reminderTime:
+        type: string
+      skipped_today:
+        type: boolean
+      target_count:
+        type: integer
+      timeOfDay:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_habit_dto.LogHabitRequest:
+    properties:
+      count:
+        minimum: 0
+        type: integer
+      notes:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_habit_dto.UpdateHabitRequest:
+    properties:
+      description:
+        type: string
+      frequency:
+        enum:
+        - daily
+        - weekly
+        - custom
+        type: string
+      frequencyDays:
+        items:
+          type: string
+        type: array
+      icon:
+        type: string
+      intervalDays:
+        type: integer
+      is_active:
+        type: boolean
+      life_area_id:
+        type: integer
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+      reminderTime:
+        type: string
+      target_count:
+        minimum: 1
+        type: integer
+      targetDays:
+        type: integer
+      timeOfDay:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_lifearea_dto.CreateLifeAreaRequest:
+    properties:
+      color:
+        maxLength: 7
+        type: string
+      display_order:
+        type: integer
+      icon:
+        maxLength: 50
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - name
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_lifearea_dto.LifeAreaResponse:
+    properties:
+      color:
+        type: string
+      created_at:
+        type: string
+      display_order:
+        type: integer
+      icon:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_lifearea_dto.UpdateLifeAreaRequest:
+    properties:
+      color:
+        maxLength: 7
+        type: string
+      display_order:
+        type: integer
+      icon:
+        maxLength: 50
+        type: string
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_note_dto.AddCollaboratorRequest:
+    properties:
+      role:
+        enum:
+        - viewer
+        - editor
+        type: string
+      user_id:
+        minimum: 1
+        type: integer
+    required:
+    - role
+    - user_id
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_note_dto.AttachmentResponse:
+    properties:
+      created_at:
+        type: string
+      file_size_bytes:
+        type: integer
+      file_type:
+        type: string
+      file_url:
+        type: string
+      id:
+        type: integer
+      original_name:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_note_dto.CollaboratorResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      role:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_note_dto.CreateNoteRequest:
+    properties:
+      content:
+        type: string
+      course_id:
+        type: integer
+      life_area_id:
+        type: integer
+      linked_task_id:
+        type: integer
+      parent_note_id:
+        type: integer
+      title:
+        maxLength: 512
+        type: string
+    required:
+    - title
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_note_dto.NoteOwnerResponse:
+    properties:
+      attachments:
+        items:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.AttachmentResponse'
+        type: array
+      collaborators:
+        items:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.CollaboratorResponse'
+        type: array
+      content:
+        type: string
+      course_id:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_public:
+        type: boolean
+      life_area_id:
+        type: integer
+      linked_task_id:
+        type: integer
+      parent_note_id:
+        type: integer
+      share_token:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_note_dto.SetPublicRequest:
+    properties:
+      is_public:
+        type: boolean
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_note_dto.ShareTokenResponse:
+    properties:
+      public_url:
+        type: string
+      share_token:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_note_dto.SharedNoteMinimalResponse:
+    properties:
+      attachments:
+        items:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.AttachmentResponse'
+        type: array
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_note_dto.UpdateNoteRequest:
+    properties:
+      content:
+        type: string
+      title:
+        maxLength: 512
+        type: string
+    required:
+    - title
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_pomodoro_dto.CreatePomodoroSessionRequest:
+    properties:
+      course_id:
+        type: integer
+      duration_minutes:
+        minimum: 1
+        type: integer
+      notes:
+        type: string
+    required:
+    - duration_minutes
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_pomodoro_dto.PomodoroSessionResponse:
+    properties:
+      course_id:
+        type: integer
+      created_at:
+        type: string
+      duration_minutes:
+        type: integer
+      id:
+        type: integer
+      notes:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_pomodoro_dto.PomodoroSettingsResponse:
+    properties:
+      study_color:
+        type: string
+      study_presets:
+        items:
+          type: integer
+        type: array
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_pomodoro_dto.UpdatePomodoroSettingsRequest:
+    properties:
+      study_color:
+        type: string
+      study_presets:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+    required:
+    - study_color
+    - study_presets
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_schedule_dto.BlockedSlotResponse:
+    properties:
+      created_at:
+        type: string
+      end_datetime:
+        type: string
+      id:
+        type: integer
+      is_flexible:
+        type: boolean
+      reason:
+        type: string
+      source_type:
+        type: string
+      start_datetime:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_schedule_dto.ConflictCheckRequest:
+    properties:
+      end:
+        type: string
+      start:
+        type: string
+    required:
+    - end
+    - start
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_schedule_dto.ConflictResponse:
+    properties:
+      has_conflict:
+        type: boolean
+      reason:
+        type: string
+      suggestions:
+        items:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_schedule_dto.TimeSlotResponse'
+        type: array
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_schedule_dto.CreateBlockedSlotRequest:
+    properties:
+      end_datetime:
+        type: string
+      is_flexible:
+        type: boolean
+      reason:
+        type: string
+      source_id:
+        type: integer
+      source_type:
+        type: string
+      start_datetime:
+        type: string
+    required:
+    - end_datetime
+    - reason
+    - start_datetime
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_schedule_dto.GenerateEventsRequest:
+    properties:
+      course_schedule_id:
+        type: integer
+      day_of_week:
+        enum:
+        - Monday
+        - Tuesday
+        - Wednesday
+        - Thursday
+        - Friday
+        - Saturday
+        - Sunday
+        type: string
+      end_time:
+        type: string
+      exclude_dates:
+        items:
+          type: string
+        type: array
+      location:
+        type: string
+      semester_end_date:
+        type: string
+      semester_start_date:
+        type: string
+      start_time:
+        type: string
+      title:
+        type: string
+    required:
+    - day_of_week
+    - end_time
+    - semester_end_date
+    - semester_start_date
+    - start_time
+    - title
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_schedule_dto.GenerateEventsResponse:
+    properties:
+      blocked_slots_created:
+        type: integer
+      events_generated:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_schedule_dto.TimeSlotResponse:
+    properties:
+      duration_minutes:
+        type: integer
+      end:
+        type: string
+      start:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_semester_dto.CreateSemesterRequest:
+    properties:
+      end_date:
+        type: string
+      is_current:
+        type: boolean
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+      start_date:
+        type: string
+    required:
+    - end_date
+    - name
+    - start_date
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_semester_dto.SemesterResponse:
+    properties:
+      created_at:
+        type: string
+      end_date:
+        type: string
+      id:
+        type: integer
+      is_current:
+        type: boolean
+      name:
+        type: string
+      start_date:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_semester_dto.UpdateSemesterRequest:
+    properties:
+      end_date:
+        type: string
+      is_current:
+        type: boolean
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+      start_date:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_seo_domain.ContentConfig:
+    additionalProperties: true
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_seo_domain.FAQItem:
+    properties:
+      answer:
+        type: string
+      question:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_seo_domain.SEOPage:
+    properties:
+      category:
+        description: Internal Linking & Relationships
+        type: string
+      changefreq:
+        type: string
+      content_config:
+        $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_seo_domain.ContentConfig'
+      content_template_key:
+        description: Content Templates & Dynamic Content
+        type: string
+      created_at:
+        type: string
+      faq_items:
+        items:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_seo_domain.FAQItem'
+        type: array
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      meta_description:
+        type: string
+      meta_keywords:
+        items:
+          type: string
+        type: array
+      parent_page_id:
+        type: integer
+      priority:
+        type: number
+      related_page_ids:
+        items:
+          type: integer
+        type: array
+      rendered_content:
+        type: string
+      slug:
+        type: string
+      template_variables:
+        $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_seo_domain.TemplateVars'
+      title:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_seo_domain.TemplateVars:
+    additionalProperties: true
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_sync_dto.ChangesDelta:
+    properties:
+      courses:
+        $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_sync_dto.ModuleDelta'
+      events:
+        $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_sync_dto.ModuleDelta'
+      goals:
+        $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_sync_dto.ModuleDelta'
+      habits:
+        $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_sync_dto.ModuleDelta'
+      life_areas:
+        $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_sync_dto.ModuleDelta'
+      notes:
+        $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_sync_dto.ModuleDelta'
+      semesters:
+        $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_sync_dto.ModuleDelta'
+      tasks:
+        $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_sync_dto.ModuleDelta'
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_sync_dto.DeltaSyncResponse:
+    properties:
+      changes:
+        $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_sync_dto.ChangesDelta'
+      timestamp:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_sync_dto.ModuleDelta:
+    properties:
+      deleted:
+        items:
+          type: integer
+        type: array
+      updated: {}
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_sync_dto.SyncSignalRequest:
+    properties:
+      payload:
+        additionalProperties: true
+        type: object
+      type:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_task_dto.CreateTaskRequest:
+    properties:
+      description:
+        type: string
+      due_date:
+        type: string
+      estimated_end:
+        type: string
+      estimated_start:
+        type: string
+      parent_task_id:
+        type: integer
+      priority:
+        enum:
+        - low
+        - medium
+        - high
+        type: string
+      title:
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - title
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_task_dto.TaskResponse:
+    properties:
+      actual_duration_min:
+        type: integer
+      actual_end:
+        type: string
+      actual_start:
+        type: string
+      completed_at:
+        type: string
+      completed_subtasks:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      due_date:
+        type: string
+      estimated_duration_min:
+        type: integer
+      estimated_end:
+        type: string
+      estimated_start:
+        type: string
+      id:
+        type: integer
+      is_completed:
+        type: boolean
+      is_overdue:
+        type: boolean
+      parent_task_id:
+        type: integer
+      priority:
+        type: string
+      progress_percentage:
+        type: number
+      title:
+        type: string
+      total_subtasks:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_task_dto.TaskStatsResponse:
+    properties:
+      completed_today:
+        type: integer
+      due_today:
+        type: integer
+      due_tomorrow:
+        type: integer
+      overdue:
+        type: integer
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_task_dto.UpdateTaskRequest:
+    properties:
+      actual_end:
+        type: string
+      actual_start:
+        type: string
+      completed_at:
+        type: string
+      description:
+        type: string
+      due_date:
+        type: string
+      estimated_end:
+        type: string
+      estimated_start:
+        type: string
+      is_completed:
+        type: boolean
+      priority:
+        enum:
+        - low
+        - medium
+        - high
+        type: string
+      title:
+        maxLength: 255
+        minLength: 1
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_user_dto.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      full_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      timezone:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_user_dto.UpdateUserRequest:
+    properties:
+      email:
+        type: string
+      full_name:
+        type: string
+      timezone:
+        type: string
+    type: object
+  github_com_M1ralai_notly-api_internal_modules_user_dto.UserResponse:
+    properties:
+      avatar_url:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: integer
+      timezone:
+        type: string
+      updated_at:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Notly projesinin backend API dokümantasyonu.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Notly API
+  version: "1.0"
+paths:
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Login Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_auth_dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_auth_dto.AuthResponse'
+      security:
+      - BearerAuth: []
+      summary: Login User
+      tags:
+      - Auth
+  /api/auth/logout:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Logout Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_auth_dto.LogoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Logout
+      tags:
+      - Auth
+  /api/auth/refresh:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Refresh Token Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_auth_dto.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_auth_dto.AuthResponse'
+      security:
+      - BearerAuth: []
+      summary: Refresh Token
+      tags:
+      - Auth
+  /api/auth/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Register Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_auth_dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Register
+      tags:
+      - Auth
+  /api/auth/resend-code:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Resend Code Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_auth_dto.ResendCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Resend Verification Code
+      tags:
+      - Auth
+  /api/auth/verify:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Verify Email Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_auth_dto.VerifyEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_auth_dto.AuthResponse'
+      security:
+      - BearerAuth: []
+      summary: Verify Email
+      tags:
+      - Auth
+  /api/calendar/google/auth-url:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_calendar_dto.AuthURLResponse'
+      security:
+      - BearerAuth: []
+      summary: GetGoogleAuthURL
+      tags:
+      - Calendar
+  /api/calendar/google/callback:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Google Callback Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_calendar_dto.GoogleCallbackRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_calendar_dto.IntegrationResponse'
+      security:
+      - BearerAuth: []
+      summary: HandleGoogleCallback
+      tags:
+      - Calendar
+  /api/calendar/google/disconnect:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: DisconnectGoogle
+      tags:
+      - Calendar
+  /api/calendar/google/sync:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: SyncGoogle
+      tags:
+      - Calendar
+  /api/calendar/integrations:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_calendar_dto.IntegrationResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetIntegrations
+      tags:
+      - Calendar
+  /api/calendar/status:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_calendar_dto.SyncStatusResponse'
+      security:
+      - BearerAuth: []
+      summary: GetSyncStatus
+      tags:
+      - Calendar
+  /api/calendar/sync/queue:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Queue Sync Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_calendar_dto.QueueSyncRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: QueueSync
+      tags:
+      - Calendar
+  /api/courses:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.CourseResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetAll
+      tags:
+      - Course
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Course
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.CreateCourseRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.CourseResponse'
+      security:
+      - BearerAuth: []
+      summary: Create
+      tags:
+      - Course
+  /api/courses/{courseId}/sessions:
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: courseId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_pomodoro_dto.PomodoroSessionResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetCourseSessions
+      tags:
+      - Pomodoro
+  /api/courses/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete
+      tags:
+      - Course
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.CourseResponse'
+      security:
+      - BearerAuth: []
+      summary: GetByID
+      tags:
+      - Course
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Course
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.UpdateCourseRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.CourseResponse'
+      security:
+      - BearerAuth: []
+      summary: Update
+      tags:
+      - Course
+  /api/courses/{id}/components:
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.ComponentResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetComponents
+      tags:
+      - Course
+  /api/courses/{id}/schedules:
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.ScheduleResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetSchedules
+      tags:
+      - Course
+  /api/courses/active:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.CourseResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetActive
+      tags:
+      - Course
+  /api/courses/components:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Component
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.CreateComponentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.ComponentResponse'
+      security:
+      - BearerAuth: []
+      summary: CreateComponent
+      tags:
+      - Course
+  /api/courses/components/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: DeleteComponent
+      tags:
+      - Course
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Component
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.UpdateComponentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.ComponentResponse'
+      security:
+      - BearerAuth: []
+      summary: UpdateComponent
+      tags:
+      - Course
+  /api/courses/schedules:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Schedule
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.CreateScheduleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.ScheduleResponse'
+      security:
+      - BearerAuth: []
+      summary: CreateSchedule
+      tags:
+      - Course
+  /api/courses/schedules/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: DeleteSchedule
+      tags:
+      - Course
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Schedule
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.UpdateScheduleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_course_dto.ScheduleResponse'
+      security:
+      - BearerAuth: []
+      summary: UpdateSchedule
+      tags:
+      - Course
+  /api/dashboard:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_dashboard_dto.DashboardResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Dashboard Data
+      tags:
+      - Dashboard
+  /api/embed/{slug}:
+    get:
+      parameters:
+      - description: Slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: HTML Embed
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: ServeEmbedWidget
+      tags:
+      - Seo
+  /api/events:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_event_dto.EventResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetAll
+      tags:
+      - Event
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Event
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_event_dto.CreateEventRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_event_dto.EventResponse'
+      security:
+      - BearerAuth: []
+      summary: Create
+      tags:
+      - Event
+  /api/events/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete
+      tags:
+      - Event
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_event_dto.EventResponse'
+      security:
+      - BearerAuth: []
+      summary: GetByID
+      tags:
+      - Event
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Event
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_event_dto.UpdateEventRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_event_dto.EventResponse'
+      security:
+      - BearerAuth: []
+      summary: Update
+      tags:
+      - Event
+  /api/events/calendar:
+    get:
+      parameters:
+      - description: Start Date (YYYY-MM-DD)
+        in: query
+        name: start
+        type: string
+      - description: End Date (YYYY-MM-DD)
+        in: query
+        name: end
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_event_dto.EventResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetByDateRange
+      tags:
+      - Event
+  /api/goals:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_goal_dto.GoalResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetAll
+      tags:
+      - Goal
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Goal
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_goal_dto.CreateGoalRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_goal_dto.GoalResponse'
+      security:
+      - BearerAuth: []
+      summary: Create
+      tags:
+      - Goal
+  /api/goals/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete
+      tags:
+      - Goal
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_goal_dto.GoalResponse'
+      security:
+      - BearerAuth: []
+      summary: GetByID
+      tags:
+      - Goal
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Goal
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_goal_dto.UpdateGoalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_goal_dto.GoalResponse'
+      security:
+      - BearerAuth: []
+      summary: Update
+      tags:
+      - Goal
+  /api/habits:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_habit_dto.HabitResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetAll
+      tags:
+      - Habit
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Habit
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_habit_dto.CreateHabitRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_habit_dto.HabitResponse'
+      security:
+      - BearerAuth: []
+      summary: Create
+      tags:
+      - Habit
+  /api/habits/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete
+      tags:
+      - Habit
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_habit_dto.HabitResponse'
+      security:
+      - BearerAuth: []
+      summary: GetByID
+      tags:
+      - Habit
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Habit
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_habit_dto.UpdateHabitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_habit_dto.HabitResponse'
+      security:
+      - BearerAuth: []
+      summary: Update
+      tags:
+      - Habit
+  /api/habits/{id}/complete:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Log Habit Optional
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_habit_dto.LogHabitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Complete
+      tags:
+      - Habit
+  /api/habits/{id}/log:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Log Habit
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_habit_dto.LogHabitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: LogHabit
+      tags:
+      - Habit
+  /api/habits/{id}/skip:
+    post:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Skip
+      tags:
+      - Habit
+  /api/habits/{id}/uncomplete:
+    post:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Uncomplete
+      tags:
+      - Habit
+  /api/habits/active:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_habit_dto.HabitResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetActive
+      tags:
+      - Habit
+  /api/jobs:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+      security:
+      - BearerAuth: []
+      summary: List Jobs
+      tags:
+      - Job
+  /api/jobs/{job_name}/history:
+    get:
+      parameters:
+      - description: job_name
+        in: path
+        name: job_name
+        required: true
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get Job History
+      tags:
+      - Job
+  /api/jobs/{job_name}/status:
+    get:
+      parameters:
+      - description: job_name
+        in: path
+        name: job_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get Job Status
+      tags:
+      - Job
+  /api/jobs/{job_name}/trigger:
+    post:
+      parameters:
+      - description: job_name
+        in: path
+        name: job_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Trigger Job
+      tags:
+      - Job
+  /api/life-areas:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_lifearea_dto.LifeAreaResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetAll
+      tags:
+      - Lifearea
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Life Area
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_lifearea_dto.CreateLifeAreaRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_lifearea_dto.LifeAreaResponse'
+      security:
+      - BearerAuth: []
+      summary: Create
+      tags:
+      - Lifearea
+  /api/life-areas/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete
+      tags:
+      - Lifearea
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_lifearea_dto.LifeAreaResponse'
+      security:
+      - BearerAuth: []
+      summary: GetByID
+      tags:
+      - Lifearea
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Life Area
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_lifearea_dto.UpdateLifeAreaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_lifearea_dto.LifeAreaResponse'
+      security:
+      - BearerAuth: []
+      summary: Update
+      tags:
+      - Lifearea
+  /api/notes:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.NoteOwnerResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: List all notes for authenticated user
+      tags:
+      - Notes
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Note Payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.CreateNoteRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.NoteOwnerResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a note
+      tags:
+      - Notes
+  /api/notes/{id}:
+    delete:
+      parameters:
+      - description: Note ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a note
+      tags:
+      - Notes
+    get:
+      parameters:
+      - description: Note ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.NoteOwnerResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a note by ID
+      tags:
+      - Notes
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Note ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Note Payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.UpdateNoteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.NoteOwnerResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a note
+      tags:
+      - Notes
+  /api/notes/{id}/attachments:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Note ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: File to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.AttachmentResponse'
+      security:
+      - BearerAuth: []
+      summary: Upload a media file (image/PDF) to a note
+      tags:
+      - Notes
+  /api/notes/{id}/attachments/{attId}:
+    delete:
+      parameters:
+      - description: Note ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Attachment ID
+        in: path
+        name: attId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete an attachment from a note
+      tags:
+      - Notes
+  /api/notes/{id}/collaborators:
+    get:
+      parameters:
+      - description: Note ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.CollaboratorResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: List collaborators for a note
+      tags:
+      - Notes
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Note ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Collaborator payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.AddCollaboratorRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.CollaboratorResponse'
+      security:
+      - BearerAuth: []
+      summary: Add a collaborator to a note
+      tags:
+      - Notes
+  /api/notes/{id}/collaborators/{userId}:
+    delete:
+      parameters:
+      - description: Note ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Collaborator User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Remove a collaborator from a note
+      tags:
+      - Notes
+  /api/notes/{id}/share/public:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Note ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Public flag
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.SetPublicRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.ShareTokenResponse'
+      security:
+      - BearerAuth: []
+      summary: Toggle public sharing for a note
+      tags:
+      - Notes
+  /api/pomodoro/sessions:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_pomodoro_dto.PomodoroSessionResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetSessions
+      tags:
+      - Pomodoro
+  /api/pomodoros:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Session
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_pomodoro_dto.CreatePomodoroSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_pomodoro_dto.PomodoroSessionResponse'
+      security:
+      - BearerAuth: []
+      summary: CreateSession
+      tags:
+      - Pomodoro
+  /api/pomodoros/settings:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_pomodoro_dto.PomodoroSettingsResponse'
+      security:
+      - BearerAuth: []
+      summary: GetSettings
+      tags:
+      - Pomodoro
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Update Settings
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_pomodoro_dto.UpdatePomodoroSettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_pomodoro_dto.PomodoroSettingsResponse'
+      security:
+      - BearerAuth: []
+      summary: UpdateSettings
+      tags:
+      - Pomodoro
+  /api/schedule/blocked-slots:
+    get:
+      parameters:
+      - description: Date (YYYY-MM-DD)
+        in: query
+        name: date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_schedule_dto.BlockedSlotResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetBlockedSlots
+      tags:
+      - Schedule
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Blocked Slot
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_schedule_dto.CreateBlockedSlotRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_schedule_dto.BlockedSlotResponse'
+      security:
+      - BearerAuth: []
+      summary: CreateBlockedSlot
+      tags:
+      - Schedule
+  /api/schedule/blocked-slots/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: DeleteBlockedSlot
+      tags:
+      - Schedule
+  /api/schedule/check-conflict:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Conflict Check Data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_schedule_dto.ConflictCheckRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_schedule_dto.ConflictResponse'
+      security:
+      - BearerAuth: []
+      summary: CheckConflict
+      tags:
+      - Schedule
+  /api/schedule/free-slots:
+    get:
+      parameters:
+      - description: Date (YYYY-MM-DD)
+        in: query
+        name: date
+        required: true
+        type: string
+      - description: Duration in minutes (minimum 15)
+        in: query
+        name: duration
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_schedule_dto.TimeSlotResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetFreeSlots
+      tags:
+      - Schedule
+  /api/schedule/generate-events:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Generate Events Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_schedule_dto.GenerateEventsRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_schedule_dto.GenerateEventsResponse'
+      security:
+      - BearerAuth: []
+      summary: GenerateEvents
+      tags:
+      - Schedule
+  /api/semesters:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_semester_dto.SemesterResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetAll
+      tags:
+      - Semester
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Semester
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_semester_dto.CreateSemesterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_semester_dto.SemesterResponse'
+      security:
+      - BearerAuth: []
+      summary: Create
+      tags:
+      - Semester
+  /api/semesters/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete
+      tags:
+      - Semester
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_semester_dto.SemesterResponse'
+      security:
+      - BearerAuth: []
+      summary: GetByID
+      tags:
+      - Semester
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update Semester
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_semester_dto.UpdateSemesterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_semester_dto.SemesterResponse'
+      security:
+      - BearerAuth: []
+      summary: Update
+      tags:
+      - Semester
+  /api/semesters/current:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_semester_dto.SemesterResponse'
+      security:
+      - BearerAuth: []
+      summary: GetCurrent
+      tags:
+      - Semester
+  /api/seo/pages:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_seo_domain.SEOPage'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetAllPages
+      tags:
+      - Seo
+  /api/seo/pages/{id}/related:
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_seo_domain.SEOPage'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetRelatedPages
+      tags:
+      - Seo
+  /api/seo/pages/{slug}:
+    get:
+      parameters:
+      - description: Slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_seo_domain.SEOPage'
+      security:
+      - BearerAuth: []
+      summary: GetPageBySlug
+      tags:
+      - Seo
+  /api/shared/notes/{token}:
+    get:
+      parameters:
+      - description: Share token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_note_dto.SharedNoteMinimalResponse'
+      summary: View a publicly shared note (no auth required)
+      tags:
+      - Notes (Public)
+  /api/sitemap.xml:
+    get:
+      produces:
+      - text/xml
+      responses:
+        "200":
+          description: XML Sitemap
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: GenerateSitemap
+      tags:
+      - Seo
+  /api/sync/delta:
+    get:
+      parameters:
+      - description: Since Time (RFC3339)
+        in: query
+        name: since
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_sync_dto.DeltaSyncResponse'
+      security:
+      - BearerAuth: []
+      summary: GetDelta
+      tags:
+      - Sync
+  /api/sync/signal:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Sync Signal
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_sync_dto.SyncSignalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: SyncSignal
+      tags:
+      - Sync
+  /api/tasks:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_task_dto.TaskResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get All Tasks
+      tags:
+      - Task
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Task
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_task_dto.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_task_dto.TaskResponse'
+      security:
+      - BearerAuth: []
+      summary: Create Task
+      tags:
+      - Task
+  /api/tasks/{id}:
+    delete:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete Task
+      tags:
+      - Task
+    get:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_task_dto.TaskResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Task By ID
+      tags:
+      - Task
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update Task
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_task_dto.UpdateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_task_dto.TaskResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Task
+      tags:
+      - Task
+  /api/tasks/{id}/complete:
+    post:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Complete Subtask
+      tags:
+      - Task
+  /api/tasks/{id}/subtasks:
+    get:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_task_dto.TaskResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get Subtasks
+      tags:
+      - Task
+  /api/tasks/{id}/uncomplete:
+    post:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Uncomplete Task
+      tags:
+      - Task
+  /api/tasks/parent:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_task_dto.TaskResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get Parent Tasks
+      tags:
+      - Task
+  /api/tasks/stats:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_task_dto.TaskStatsResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Task Statistics
+      tags:
+      - Task
+  /api/users:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_user_dto.UserResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: GetAllUsers
+      tags:
+      - User
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: New User Data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_user_dto.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_user_dto.UserResponse'
+      security:
+      - BearerAuth: []
+      summary: CreateUser
+      tags:
+      - User
+  /api/users/{id}:
+    delete:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: DeleteUser
+      tags:
+      - User
+    get:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_user_dto.UserResponse'
+      security:
+      - BearerAuth: []
+      summary: GetUser
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update Data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_user_dto.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_M1ralai_notly-api_internal_modules_user_dto.UserResponse'
+      security:
+      - BearerAuth: []
+      summary: UpdateUser
+      tags:
+      - User
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

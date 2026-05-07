@@ -1,0 +1,43 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Build output
+bin/
+dist/
+build/
+tmp/
+api
+notly-api
+
+# Runtime data
+uploads/
+logs/
+backups/
+
+# Logs
+*.log
+*.log.*
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.*
+vendor/
+
+# Editor and OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Cache
+.cache/
