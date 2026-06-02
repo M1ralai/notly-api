@@ -284,13 +284,16 @@ func NewServer(db *sqlx.DB, zapLogger *logger.ZapLogger) *Server {
 		w.Write([]byte("OK"))
 	}).Methods("GET")
 
-	// Public routes (no auth required)
+	// Register public auth routes directly on the root router (/auth/...)
 	authHandler.RegisterRoutes(router)
 
 	// API routes (protected)
 	api := router.PathPrefix("/api").Subrouter()
 
 	api.Use(middleware.AuthMiddleware)
+
+	// Register public auth routes on the /api subrouter (/api/auth/...)
+	authHandler.RegisterRoutes(api)
 
 	// Register all module routes
 	userHandler.RegisterRoutes(api)
