@@ -126,13 +126,19 @@ func (s *authService) Register(ctx context.Context, req *dto.RegisterRequest) (*
 		"action": "REGISTER",
 	})
 
-	// Validate Turnstile token
-	if err := s.turnstileValidator.Verify(req.TurnstileToken); err != nil {
-		s.logger.Error("turnstile verification failed", err, map[string]interface{}{
+	if req.TurnstileToken != "" {
+		if err := s.turnstileValidator.Verify(req.TurnstileToken); err != nil {
+			s.logger.Error("turnstile verification failed", err, map[string]interface{}{
+				"email":  req.Email,
+				"action": "TURNSTILE_FAILED",
+			})
+			return nil, errors.New("bot verification failed")
+		}
+	} else {
+		s.logger.Info("turnstile token not provided, skipping verification", map[string]interface{}{
 			"email":  req.Email,
-			"action": "TURNSTILE_FAILED",
+			"action": "TURNSTILE_SKIPPED",
 		})
-		return nil, errors.New("bot verification failed")
 	}
 
 	// Check if email already exists

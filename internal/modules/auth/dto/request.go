@@ -10,7 +10,7 @@ type RegisterRequest struct {
 	Password       string `json:"password" validate:"required,min=6"`
 	FullName       string `json:"full_name,omitempty"`
 	Timezone       string `json:"timezone,omitempty"`
-	TurnstileToken string `json:"turnstile_token" validate:"required"`
+	TurnstileToken string `json:"turnstile_token,omitempty"`
 }
 
 type VerifyEmailRequest struct {
