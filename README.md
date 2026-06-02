@@ -82,6 +82,45 @@ go run cmd/api/main.go
 
 Uygulama açılırken `internal/infrastructure/database/migrations` altındaki migration dosyalarını otomatik çalıştırır.
 
+## Docker ile Deploy
+
+Repo, production'a yakın tek komutluk stack ile gelir:
+
+- `nginx`: public reverse proxy, WebSocket upgrade ve health routing
+- `api`: multi-stage Docker build ile üretilen Go binary
+- `postgres`: kalıcı volume kullanan PostgreSQL
+- `minio`: not ekleri için S3 uyumlu obje depolama
+
+İlk kurulum:
+
+```bash
+cp deploy/env.example .env
+$EDITOR .env
+```
+
+`.env` içinde en az şu değerleri gerçek secret'larla değiştir:
+
+```bash
+JWT_SECRET="$(openssl rand -hex 32)"
+ENCRYPTION_KEY="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)"
+```
+
+Stack'i doğrula ve ayağa kaldır:
+
+```bash
+make docker-config
+make docker-up
+curl http://localhost/health
+```
+
+Varsayılan olarak sadece Nginx host'a açılır (`NGINX_HTTP_PORT=80`). API container'ı internal network'te kalır; migration'lar API startup sırasında otomatik uygulanır. Loglar için:
+
+```bash
+make docker-logs
+```
+
+Production ortamında `.env` dosyasını commit'leme; TLS termination için domain/load balancer tarafında HTTPS kullan veya `deploy/nginx/conf.d/notly.conf` dosyasını sertifika mount'larıyla genişlet.
+
 ## Geliştirme Komutları
 
 ```bash
@@ -90,6 +129,7 @@ make build        # bin/api çıktısını üretir
 make test         # testleri çalıştırır
 make test-cover   # coverage ile test çalıştırır
 make migrate-up   # bekleyen migration'ları uygular
+make docker-up     # Nginx + API + PostgreSQL + MinIO stack'ini başlatır
 ```
 
 ## API Dokümantasyonu
@@ -131,7 +171,7 @@ Bu değerler boş bırakıldığında ilgili özellikler development ortamında 
 
 ## Notlar
 
-Bu repo sadece API kodunu içerir. Deployment scriptleri, gerçek ortam dosyaları ve lokal çalışma kalıntıları public repoya dahil edilmemiştir.
+Gerçek ortam secret'ları, lokal çalışma kalıntıları ve runtime volume içerikleri public repoya dahil edilmemelidir.
 
 ## Lisans
 

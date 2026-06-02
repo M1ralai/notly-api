@@ -10,8 +10,9 @@ DB_SSLMODE ?= disable
 
 DB_URL = postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSLMODE)
 MIGRATE = migrate -path internal/infrastructure/database/migrations -database "$(DB_URL)"
+COMPOSE ?= docker compose
 
-.PHONY: help migrate-up migrate-down migrate-create migrate-status migrate-force run build test test-cover lint
+.PHONY: help migrate-up migrate-down migrate-create migrate-status migrate-force run build test test-cover lint docker-config docker-build docker-up docker-down docker-logs
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -52,3 +53,20 @@ test-cover: ## Run tests with coverage
 
 lint: ## Run linter (requires golangci-lint)
 	golangci-lint run
+
+# === Docker / Deployment ===
+
+docker-config: ## Validate docker compose configuration with the example deploy env
+	$(COMPOSE) --env-file deploy/env.example config
+
+docker-build: ## Build the API Docker image
+	$(COMPOSE) --env-file deploy/env.example build api
+
+docker-up: ## Build and start the full deployment stack
+	$(COMPOSE) up -d --build
+
+docker-down: ## Stop the deployment stack
+	$(COMPOSE) down
+
+docker-logs: ## Follow API and Nginx logs
+	$(COMPOSE) logs -f api nginx
