@@ -11,26 +11,30 @@ import (
 // ─────────────────────────────────────────────────────────────────────────────
 
 type NoteModel struct {
-	ID           int        `db:"id"`
-	UserID       int        `db:"user_id"`
-	Title        string     `db:"title"`
-	Content      string     `db:"content"`
-	IsPublic     bool       `db:"is_public"`
-	ShareToken   *string    `db:"share_token"`
-	ParentNoteID *int       `db:"parent_note_id"`
-	CourseID     *int       `db:"course_id"`
-	LifeAreaID   *int       `db:"life_area_id"`
-	LinkedTaskID *int       `db:"linked_task_id"`
-	CreatedAt    time.Time  `db:"created_at"`
-	UpdatedAt    time.Time  `db:"updated_at"`
+	ID           int       `db:"id"`
+	UserID       int       `db:"user_id"`
+	Title        string    `db:"title"`
+	Content      *string   `db:"content"`
+	IsPublic     bool      `db:"is_public"`
+	ShareToken   *string   `db:"share_token"`
+	ParentNoteID *int      `db:"parent_note_id"`
+	CourseID     *int      `db:"course_id"`
+	LifeAreaID   *int      `db:"life_area_id"`
+	LinkedTaskID *int      `db:"linked_task_id"`
+	CreatedAt    time.Time `db:"created_at"`
+	UpdatedAt    time.Time `db:"updated_at"`
 }
 
 func (m *NoteModel) ToDomain() *domain.Note {
+	content := ""
+	if m.Content != nil {
+		content = *m.Content
+	}
 	return &domain.Note{
 		ID:           m.ID,
 		UserID:       m.UserID,
 		Title:        m.Title,
-		Content:      m.Content,
+		Content:      content,
 		IsPublic:     m.IsPublic,
 		ShareToken:   m.ShareToken,
 		ParentNoteID: m.ParentNoteID,

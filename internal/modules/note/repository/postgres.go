@@ -32,7 +32,7 @@ func (r *postgresNoteRepository) Create(ctx context.Context, note *domain.Note) 
 	m := &NoteModel{
 		UserID:       note.UserID,
 		Title:        note.Title,
-		Content:      note.Content,
+		Content:      &note.Content,
 		IsPublic:     note.IsPublic,
 		ShareToken:   note.ShareToken,
 		ParentNoteID: note.ParentNoteID,
@@ -55,9 +55,11 @@ func (r *postgresNoteRepository) Create(ctx context.Context, note *domain.Note) 
 	return m.ToDomain(), nil
 }
 
+const noteSelectColumns = `id, user_id, title, content, is_public, share_token, parent_note_id, course_id, life_area_id, linked_task_id, created_at, updated_at`
+
 func (r *postgresNoteRepository) GetByID(ctx context.Context, id int) (*domain.Note, error) {
 	m := &NoteModel{}
-	err := r.db.GetContext(ctx, m, `SELECT * FROM notes WHERE id = $1`, id)
+	err := r.db.GetContext(ctx, m, `SELECT `+noteSelectColumns+` FROM notes WHERE id = $1`, id)
 	if err == sql.ErrNoRows {
 		return nil, fmt.Errorf("not found")
 	}
@@ -69,7 +71,7 @@ func (r *postgresNoteRepository) GetByID(ctx context.Context, id int) (*domain.N
 
 func (r *postgresNoteRepository) GetByUserID(ctx context.Context, userID int) ([]*domain.Note, error) {
 	var models []*NoteModel
-	err := r.db.SelectContext(ctx, &models, `SELECT * FROM notes WHERE user_id = $1 ORDER BY created_at DESC`, userID)
+	err := r.db.SelectContext(ctx, &models, `SELECT `+noteSelectColumns+` FROM notes WHERE user_id = $1 ORDER BY created_at DESC`, userID)
 	if err != nil {
 		return nil, fmt.Errorf("note.GetByUserID: %w", err)
 	}
@@ -89,7 +91,7 @@ func (r *postgresNoteRepository) Update(ctx context.Context, note *domain.Note) 
 	m := &NoteModel{
 		ID:         note.ID,
 		Title:      note.Title,
-		Content:    note.Content,
+		Content:    &note.Content,
 		IsPublic:   note.IsPublic,
 		ShareToken: note.ShareToken,
 	}
@@ -255,7 +257,7 @@ func (r *postgresNoteRepository) IsCollaborator(ctx context.Context, noteID, use
 
 func (r *postgresNoteRepository) GetUpdatedSince(ctx context.Context, userID int, since time.Time) ([]interface{}, error) {
 	var models []*NoteModel
-	query := `SELECT * FROM notes WHERE user_id = $1 AND updated_at > $2`
+	query := `SELECT ` + noteSelectColumns + ` FROM notes WHERE user_id = $1 AND updated_at > $2`
 	err := r.db.SelectContext(ctx, &models, query, userID, since)
 	if err != nil {
 		return nil, err
