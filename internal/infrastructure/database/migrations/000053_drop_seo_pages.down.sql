@@ -1,0 +1,2 @@
+-- Down migration for drop_seo_pages (no-op as seo module is deprecated)
+-- To recreate seo_pages, run migration 000034

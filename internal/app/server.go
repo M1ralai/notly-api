@@ -70,10 +70,6 @@ import (
 	dashboardHttp "github.com/M1ralai/notly-api/internal/modules/dashboard/http"
 	dashboardService "github.com/M1ralai/notly-api/internal/modules/dashboard/service"
 
-	seoHttp "github.com/M1ralai/notly-api/internal/modules/seo/http"
-	seoRepo "github.com/M1ralai/notly-api/internal/modules/seo/repository"
-	seoService "github.com/M1ralai/notly-api/internal/modules/seo/service"
-
 	syncHttp "github.com/M1ralai/notly-api/internal/modules/sync/http"
 	syncService "github.com/M1ralai/notly-api/internal/modules/sync/service"
 
@@ -210,11 +206,6 @@ func NewServer(db *sqlx.DB, zapLogger *logger.ZapLogger) *Server {
 	pomodoroSvc := pomodoroService.NewService(pomodoroRepository)
 	pomodoroHandler := pomodoroHttp.NewHandler(pomodoroSvc)
 
-	// SEO module (public routes - no auth required)
-	seoRepository := seoRepo.NewPostgresRepository(db)
-	seoSvc := seoService.NewSEOService(seoRepository, zapLogger)
-	seoHandler := seoHttp.NewHandler(seoSvc)
-
 	// Note module (shared notes system)
 	minioAdapter, minioErr := storage.NewMinIOAdapter()
 	if minioErr != nil {
@@ -251,9 +242,6 @@ func NewServer(db *sqlx.DB, zapLogger *logger.ZapLogger) *Server {
 
 	// Router içerisine Swagger Endpoint'ini Localhost Korumalı olarak ekleme
 	router.PathPrefix("/swagger/").Handler(LocalhostOnlyMiddleware(httpSwagger.WrapHandler))
-
-	// SEO module routes (public - must be registered before middleware)
-	seoHandler.RegisterRoutes(router)
 
 	// Note module – public shared note route (no JWT)
 	noteHandler.RegisterPublicRoutes(router)
