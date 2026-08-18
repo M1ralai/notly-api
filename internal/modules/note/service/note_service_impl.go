@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"mime/multipart"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -22,6 +23,8 @@ type noteServiceImpl struct {
 	storage      storage.StorageProvider
 	subscription subscriptionService.Service
 }
+
+const defaultPublicAppURL = "https://app.notly.tr"
 
 // NewNoteService wires together the repository and the storage provider.
 func NewNoteService(repo repository.NoteRepository, storage storage.StorageProvider, subscription subscriptionService.Service) NoteService {
@@ -100,6 +103,14 @@ func (s *noteServiceImpl) hydrateOwnerResponse(ctx context.Context, n *domain.No
 		return nil, err
 	}
 	return noteToOwnerResponse(n, atts, cols), nil
+}
+
+func sharedNoteURL(token string) string {
+	baseURL := strings.TrimRight(os.Getenv("PUBLIC_APP_URL"), "/")
+	if baseURL == "" {
+		baseURL = defaultPublicAppURL
+	}
+	return fmt.Sprintf("%s/shared/notes/%s", baseURL, token)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -281,7 +292,7 @@ func (s *noteServiceImpl) SetPublic(ctx context.Context, noteID, userID int, isP
 	resp := &dto.ShareTokenResponse{}
 	if token != nil {
 		resp.ShareToken = *token
-		resp.PublicURL = fmt.Sprintf("/api/shared/notes/%s", *token)
+		resp.PublicURL = sharedNoteURL(*token)
 	}
 	return resp, nil
 }
