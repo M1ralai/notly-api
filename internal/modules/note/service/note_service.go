@@ -2,10 +2,18 @@ package service
 
 import (
 	"context"
+	"io"
 	"mime/multipart"
 
 	"github.com/M1ralai/notly-api/internal/modules/note/dto"
 )
+
+type AttachmentDownload struct {
+	Body        io.ReadCloser
+	FileName    string
+	ContentType string
+	Size        int64
+}
 
 // NoteService is the contract that the HTTP layer depends on.
 // It returns DTOs – never domain models or raw DB rows.
@@ -24,6 +32,7 @@ type NoteService interface {
 	// ── Public Sharing (Kısım 04) ─────────────────────────────────────────────
 	SetPublic(ctx context.Context, noteID, userID int, isPublic bool) (*dto.ShareTokenResponse, error)
 	GetByShareToken(ctx context.Context, token string) (*dto.SharedNoteMinimalResponse, error)
+	DownloadSharedAttachment(ctx context.Context, token string, attachmentID int) (*AttachmentDownload, error)
 
 	// ── Collaborators (Kısım 04) ──────────────────────────────────────────────
 	AddCollaborator(ctx context.Context, noteID, ownerID int, req *dto.AddCollaboratorRequest) (*dto.CollaboratorResponse, error)

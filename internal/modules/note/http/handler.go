@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"mime"
 	"net/http"
 	"strconv"
 
@@ -59,6 +61,7 @@ func (h *Handler) RegisterRoutes(api *mux.Router) {
 // RegisterPublicRoutes registers auth-free routes on the root router.
 func (h *Handler) RegisterPublicRoutes(router *mux.Router) {
 	router.HandleFunc("/api/shared/notes/{token}", h.GetSharedNote).Methods("GET")
+	router.HandleFunc("/api/shared/notes/{token}/attachments/{attId}", h.DownloadSharedAttachment).Methods("GET")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -342,6 +345,49 @@ func (h *Handler) GetSharedNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.WriteJson(w, resp, http.StatusOK, "Shared note fetched")
+}
+
+// DownloadSharedAttachment godoc
+// @Summary Download an attachment from a publicly shared note
+// @Tags Notes (Public)
+// @Produce octet-stream
+// @Param token path string true "Share token"
+// @Param attId path int true "Attachment ID"
+// @Success 200 {file} file
+// @Router /api/shared/notes/{token}/attachments/{attId} [get]
+func (h *Handler) DownloadSharedAttachment(w http.ResponseWriter, r *http.Request) {
+	token := mux.Vars(r)["token"]
+	if token == "" {
+		utils.ReturnError(w, "BAD_REQUEST", "Missing share token", "token is empty")
+		return
+	}
+
+	attID, err := pathParamInt(r, "attId")
+	if err != nil {
+		utils.ReturnError(w, "BAD_REQUEST", "Invalid attachment ID", err.Error())
+		return
+	}
+
+	download, err := h.svc.DownloadSharedAttachment(r.Context(), token, attID)
+	if err != nil {
+		handleServiceError(w, err)
+		return
+	}
+	defer download.Body.Close()
+
+	fileName := download.FileName
+	if fileName == "" {
+		fileName = "attachment"
+	}
+
+	w.Header().Set("Content-Type", download.ContentType)
+	w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": fileName}))
+	w.Header().Set("Cache-Control", "no-store")
+	if download.Size > 0 {
+		w.Header().Set("Content-Length", strconv.FormatInt(download.Size, 10))
+	}
+	w.WriteHeader(http.StatusOK)
+	_, _ = io.Copy(w, download.Body)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

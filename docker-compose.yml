@@ -40,6 +40,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY must be set and exactly 32 bytes}
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://app.notly.tr}
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-https://api.notly.tr}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS:-no-reply@example.com}
       TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}

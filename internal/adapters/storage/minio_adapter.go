@@ -104,3 +104,21 @@ func (a *MinIOAdapter) Delete(objectKey string) error {
 	}
 	return nil
 }
+
+func (a *MinIOAdapter) Download(ctx context.Context, objectKey string) (*StoredObject, error) {
+	info, err := a.client.StatObject(ctx, a.bucketName, objectKey, minio.StatObjectOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("minio: stat failed for %q: %w", objectKey, err)
+	}
+
+	object, err := a.client.GetObject(ctx, a.bucketName, objectKey, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("minio: download failed for %q: %w", objectKey, err)
+	}
+
+	return &StoredObject{
+		Body:        object,
+		ContentType: info.ContentType,
+		Size:        info.Size,
+	}, nil
+}

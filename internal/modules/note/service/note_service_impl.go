@@ -25,6 +25,7 @@ type noteServiceImpl struct {
 }
 
 const defaultPublicAppURL = "https://app.notly.tr"
+const defaultPublicAPIURL = "https://api.notly.tr"
 
 // NewNoteService wires together the repository and the storage provider.
 func NewNoteService(repo repository.NoteRepository, storage storage.StorageProvider, subscription subscriptionService.Service) NoteService {
@@ -111,6 +112,24 @@ func sharedNoteURL(token string) string {
 		baseURL = defaultPublicAppURL
 	}
 	return fmt.Sprintf("%s/shared/notes/%s", baseURL, token)
+}
+
+func publicAPIURL() string {
+	baseURL := strings.TrimRight(os.Getenv("PUBLIC_API_URL"), "/")
+	if baseURL == "" {
+		baseURL = defaultPublicAPIURL
+	}
+	return strings.TrimSuffix(baseURL, "/api")
+}
+
+func sharedAttachmentURL(token string, attachmentID int) string {
+	return fmt.Sprintf("%s/api/shared/notes/%s/attachments/%d", publicAPIURL(), token, attachmentID)
+}
+
+func toSharedAttachmentResponse(token string, a *domain.NoteAttachment) dto.AttachmentResponse {
+	resp := toAttachmentResponse(a)
+	resp.FileURL = sharedAttachmentURL(token, a.ID)
+	return resp
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -307,7 +326,7 @@ func (s *noteServiceImpl) GetByShareToken(ctx context.Context, token string) (*d
 	atts, _ := s.repo.GetAttachments(ctx, note.ID)
 	attResp := make([]dto.AttachmentResponse, 0, len(atts))
 	for _, a := range atts {
-		attResp = append(attResp, toAttachmentResponse(a))
+		attResp = append(attResp, toSharedAttachmentResponse(token, a))
 	}
 
 	// ✅ Privacy boundary enforced here: no course/task/life_area exposed
@@ -317,6 +336,49 @@ func (s *noteServiceImpl) GetByShareToken(ctx context.Context, token string) (*d
 		Content:     note.Content,
 		Attachments: attResp,
 		CreatedAt:   note.CreatedAt,
+	}, nil
+}
+
+func (s *noteServiceImpl) DownloadSharedAttachment(ctx context.Context, token string, attachmentID int) (*AttachmentDownload, error) {
+	note, err := s.repo.GetByShareToken(ctx, token)
+	if err != nil {
+		return nil, fmt.Errorf("not found")
+	}
+
+	att, err := s.repo.GetAttachmentByID(ctx, attachmentID)
+	if err != nil {
+		return nil, fmt.Errorf("not found")
+	}
+	if att.NoteID != note.ID {
+		return nil, fmt.Errorf("not found")
+	}
+	if s.storage == nil {
+		return nil, fmt.Errorf("storage unavailable")
+	}
+
+	object, err := s.storage.Download(ctx, att.ObjectKey)
+	if err != nil {
+		return nil, err
+	}
+
+	contentType := att.FileType
+	if contentType == "" {
+		contentType = object.ContentType
+	}
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+
+	size := att.FileSizeBytes
+	if size <= 0 {
+		size = object.Size
+	}
+
+	return &AttachmentDownload{
+		Body:        object.Body,
+		FileName:    att.OriginalName,
+		ContentType: contentType,
+		Size:        size,
 	}, nil
 }
 
