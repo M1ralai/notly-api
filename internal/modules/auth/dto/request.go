@@ -1,8 +1,9 @@
 package dto
 
 type LoginRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
+	Email          string `json:"email" validate:"required,email"`
+	Password       string `json:"password" validate:"required"`
+	TurnstileToken string `json:"turnstile_token,omitempty"`
 }
 
 type RegisterRequest struct {

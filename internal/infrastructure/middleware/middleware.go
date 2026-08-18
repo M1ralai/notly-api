@@ -38,7 +38,7 @@ type Claims struct {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/api/auth/login" || r.URL.Path == "/api/auth/register" || r.URL.Path == "/api/auth/verify" || r.URL.Path == "/api/auth/resend-code" || r.URL.Path == "/api/auth/refresh" || r.URL.Path == "/api/auth/logout" || r.URL.Path == "/auth/login" || r.URL.Path == "/auth/register" || r.URL.Path == "/health" || r.Method == "OPTIONS" {
+		if isPublicAuthPath(r.URL.Path) || r.URL.Path == "/health" || r.Method == "OPTIONS" {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -82,6 +82,22 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func isPublicAuthPath(path string) bool {
+	switch path {
+	case "/api/auth/login",
+		"/api/auth/register",
+		"/api/auth/verify",
+		"/api/auth/resend-code",
+		"/api/auth/refresh",
+		"/api/auth/logout",
+		"/auth/login",
+		"/auth/register":
+		return true
+	default:
+		return false
+	}
 }
 
 func TimeoutMiddleware(next http.Handler) http.Handler {

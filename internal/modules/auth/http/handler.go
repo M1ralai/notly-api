@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/M1ralai/notly-api/internal/common/utils"
@@ -50,6 +51,10 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	response, err := h.service.Login(r.Context(), &req)
 	if err != nil {
+		if errors.Is(err, service.ErrBotVerificationFailed) {
+			utils.ReturnError(w, "FORBIDDEN", "Bot doğrulaması başarısız", err.Error())
+			return
+		}
 		if err.Error() == "invalid email or password" {
 			utils.ReturnError(w, "UNAUTHORIZED", "Geçersiz e-posta veya şifre", err.Error())
 			return
@@ -83,7 +88,11 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 
 	response, err := h.service.Register(r.Context(), &req)
 	if err != nil {
-		if err.Error() == "email already exists" {
+		if errors.Is(err, service.ErrBotVerificationFailed) {
+			utils.ReturnError(w, "FORBIDDEN", "Bot doğrulaması başarısız", err.Error())
+			return
+		}
+		if err.Error() == "email already exists" || err.Error() == "email already registered" {
 			utils.ReturnError(w, "BAD_REQUEST", "Bu e-posta adresi zaten kullanımda", err.Error())
 			return
 		}

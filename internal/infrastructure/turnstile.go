@@ -3,10 +3,12 @@ package infrastructure
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -24,6 +26,7 @@ type TurnstileVerifyResponse struct {
 	Success     bool     `json:"success"`
 	ChallengeTs string   `json:"challenge_ts"`
 	Hostname    string   `json:"hostname"`
+	Action      string   `json:"action,omitempty"`
 	ErrorCodes  []string `json:"error-codes,omitempty"`
 }
 
@@ -36,11 +39,20 @@ func NewTurnstileValidator() *TurnstileValidator {
 	}
 }
 
-func (v *TurnstileValidator) Verify(token string) error {
-	if v.secretKey == "" {
+func (v *TurnstileValidator) Enabled() bool {
+	return v != nil && v.secretKey != ""
+}
+
+func (v *TurnstileValidator) Verify(token string, expectedAction ...string) error {
+	if v == nil || v.secretKey == "" {
 		// If no secret key, skip validation (development mode)
 		fmt.Println("⚠️  TURNSTILE_SECRET_KEY not set - skipping validation")
 		return nil
+	}
+
+	token = strings.TrimSpace(token)
+	if token == "" {
+		return errors.New("turnstile token is required")
 	}
 
 	reqBody := TurnstileVerifyRequest{
@@ -75,6 +87,10 @@ func (v *TurnstileValidator) Verify(token string) error {
 
 	if !verifyResp.Success {
 		return fmt.Errorf("turnstile verification failed: %v", verifyResp.ErrorCodes)
+	}
+
+	if len(expectedAction) > 0 && expectedAction[0] != "" && verifyResp.Action != expectedAction[0] {
+		return fmt.Errorf("turnstile action mismatch: expected %s, got %s", expectedAction[0], verifyResp.Action)
 	}
 
 	fmt.Printf("✅ Turnstile verification successful for hostname: %s\n", verifyResp.Hostname)

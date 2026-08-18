@@ -63,11 +63,17 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
+var ErrBotVerificationFailed = errors.New("bot verification failed")
+
 func (s *authService) Login(ctx context.Context, req *dto.LoginRequest) (*dto.AuthResponse, error) {
 	s.logger.Info("Login attempt", map[string]interface{}{
 		"email":  req.Email,
 		"action": "LOGIN",
 	})
+
+	if err := s.verifyTurnstile(req.Email, "LOGIN", "login", req.TurnstileToken); err != nil {
+		return nil, err
+	}
 
 	user, err := s.userRepo.GetByEmail(ctx, req.Email)
 	if err != nil {
@@ -126,19 +132,8 @@ func (s *authService) Register(ctx context.Context, req *dto.RegisterRequest) (*
 		"action": "REGISTER",
 	})
 
-	if req.TurnstileToken != "" {
-		if err := s.turnstileValidator.Verify(req.TurnstileToken); err != nil {
-			s.logger.Error("turnstile verification failed", err, map[string]interface{}{
-				"email":  req.Email,
-				"action": "TURNSTILE_FAILED",
-			})
-			return nil, errors.New("bot verification failed")
-		}
-	} else {
-		s.logger.Info("turnstile token not provided, skipping verification", map[string]interface{}{
-			"email":  req.Email,
-			"action": "TURNSTILE_SKIPPED",
-		})
+	if err := s.verifyTurnstile(req.Email, "REGISTER", "register", req.TurnstileToken); err != nil {
+		return nil, err
 	}
 
 	// Check if email already exists
@@ -298,6 +293,30 @@ func (s *authService) Register(ctx context.Context, req *dto.RegisterRequest) (*
 			CreatedAt:  created.CreatedAt,
 		},
 	}, nil
+}
+
+func (s *authService) verifyTurnstile(email, logAction, turnstileAction, token string) error {
+	if s.turnstileValidator == nil || !s.turnstileValidator.Enabled() {
+		s.logger.Info("turnstile validation disabled", map[string]interface{}{
+			"email":  email,
+			"action": logAction + "_TURNSTILE_DISABLED",
+		})
+		return nil
+	}
+
+	if err := s.turnstileValidator.Verify(token, turnstileAction); err != nil {
+		s.logger.Error("turnstile verification failed", err, map[string]interface{}{
+			"email":  email,
+			"action": logAction + "_TURNSTILE_FAILED",
+		})
+		return ErrBotVerificationFailed
+	}
+
+	s.logger.Info("turnstile verification passed", map[string]interface{}{
+		"email":  email,
+		"action": logAction + "_TURNSTILE_PASSED",
+	})
+	return nil
 }
 
 func (s *authService) generateVerificationCode() string {
