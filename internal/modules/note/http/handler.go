@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -12,6 +13,7 @@ import (
 	"github.com/M1ralai/notly-api/internal/common/validation"
 	"github.com/M1ralai/notly-api/internal/modules/note/dto"
 	"github.com/M1ralai/notly-api/internal/modules/note/service"
+	subscriptionService "github.com/M1ralai/notly-api/internal/modules/subscription/service"
 )
 
 const maxUploadSize = 32 << 20 // 32 MB
@@ -31,8 +33,9 @@ func NewHandler(svc service.NoteService) *Handler {
 // protectedAPI must be the /api subrouter with AuthMiddleware applied.
 //
 // Call this function TWICE from server.go:
-//   noteHandler.RegisterPublicRoutes(router)
-//   noteHandler.RegisterRoutes(api)
+//
+//	noteHandler.RegisterPublicRoutes(router)
+//	noteHandler.RegisterRoutes(api)
 func (h *Handler) RegisterRoutes(api *mux.Router) {
 	api.HandleFunc("/notes", h.CreateNote).Methods("POST")
 	api.HandleFunc("/notes", h.GetAllNotes).Methods("GET")
@@ -58,7 +61,6 @@ func (h *Handler) RegisterPublicRoutes(router *mux.Router) {
 	router.HandleFunc("/api/shared/notes/{token}", h.GetSharedNote).Methods("GET")
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
@@ -80,11 +82,18 @@ func pathParamInt(r *http.Request, key string) (int, error) {
 }
 
 func handleServiceError(w http.ResponseWriter, err error) {
+	if errors.Is(err, subscriptionService.ErrPremiumRequired) {
+		utils.ReturnError(w, "PREMIUM_REQUIRED", "Notly Pro required", err.Error())
+		return
+	}
+
 	switch err.Error() {
 	case "unauthorized":
 		utils.ReturnError(w, "FORBIDDEN", "Access denied", err.Error())
 	case "not found":
 		utils.ReturnError(w, "NOT_FOUND", "Resource not found", err.Error())
+	case "storage unavailable":
+		utils.ReturnError(w, "INTERNAL_ERROR", "File storage is not available", err.Error())
 	default:
 		utils.ReturnError(w, "INTERNAL_ERROR", "An error occurred", err.Error())
 	}

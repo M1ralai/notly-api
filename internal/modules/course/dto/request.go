@@ -71,3 +71,24 @@ type UpdateScheduleRequest struct {
 	NotificationType     *string `json:"notification_type"`
 	ReminderTime         *int    `json:"reminder_time"`
 }
+
+type CreateResourceRequest struct {
+	CourseID    int      `json:"course_id" validate:"required"`
+	ComponentID *int     `json:"component_id,omitempty"`
+	Title       string   `json:"title" validate:"required,max=255"`
+	Type        string   `json:"type" validate:"required,oneof=file link video text"`
+	URL         string   `json:"url,omitempty" validate:"omitempty,url,max=500"`
+	Description string   `json:"description,omitempty"`
+	Tags        []string `json:"tags,omitempty"`
+	IsPrimary   bool     `json:"is_primary"`
+}
+
+type UpdateResourceRequest struct {
+	ComponentID *int     `json:"component_id,omitempty"`
+	Title       *string  `json:"title,omitempty" validate:"omitempty,max=255"`
+	Type        *string  `json:"type,omitempty" validate:"omitempty,oneof=file link video text"`
+	URL         *string  `json:"url,omitempty" validate:"omitempty,url,max=500"`
+	Description *string  `json:"description,omitempty"`
+	Tags        []string `json:"tags,omitempty"`
+	IsPrimary   *bool    `json:"is_primary,omitempty"`
+}

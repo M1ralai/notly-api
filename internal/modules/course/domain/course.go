@@ -19,6 +19,7 @@ type Course struct {
 	UpdatedAt   time.Time
 	Components  []*Component
 	Schedules   []*Schedule
+	Resources   []*Resource
 }
 
 type Component struct {
@@ -49,6 +50,23 @@ type Schedule struct {
 	NotificationType     string
 	ReminderTime         int
 	CreatedAt            time.Time
+}
+
+type Resource struct {
+	ID            int
+	CourseID      int
+	ComponentID   *int
+	Title         string
+	Type          string
+	URL           string
+	FilePath      string
+	Description   string
+	Tags          []string
+	IsPrimary     bool
+	FileSizeBytes int64
+	MimeType      string
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 func (c *Course) IsCompleted() bool {

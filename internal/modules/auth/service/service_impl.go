@@ -65,6 +65,21 @@ type Claims struct {
 
 var ErrBotVerificationFailed = errors.New("bot verification failed")
 
+func toAuthUserResponse(user *userDomain.User) dto.UserResponse {
+	return dto.UserResponse{
+		ID:               user.ID,
+		Email:            user.Email,
+		FullName:         user.FullName,
+		AvatarURL:        user.AvatarURL,
+		Timezone:         user.Timezone,
+		IsVerified:       user.IsVerified,
+		IsPremium:        user.HasPremiumAccess(),
+		PremiumPlan:      user.PremiumPlan,
+		PremiumExpiresAt: user.PremiumExpiresAt,
+		CreatedAt:        user.CreatedAt,
+	}
+}
+
 func (s *authService) Login(ctx context.Context, req *dto.LoginRequest) (*dto.AuthResponse, error) {
 	s.logger.Info("Login attempt", map[string]interface{}{
 		"email":  req.Email,
@@ -114,15 +129,7 @@ func (s *authService) Login(ctx context.Context, req *dto.LoginRequest) (*dto.Au
 		Token:        token,
 		RefreshToken: refreshToken,
 		ExpiresAt:    expiresAt,
-		User: dto.UserResponse{
-			ID:         user.ID,
-			Email:      user.Email,
-			FullName:   user.FullName,
-			AvatarURL:  user.AvatarURL,
-			Timezone:   user.Timezone,
-			IsVerified: user.IsVerified,
-			CreatedAt:  user.CreatedAt,
-		},
+		User:         toAuthUserResponse(user),
 	}, nil
 }
 
@@ -202,14 +209,7 @@ func (s *authService) Register(ctx context.Context, req *dto.RegisterRequest) (*
 		// Return response with empty token (user must verify first)
 		return &dto.AuthResponse{
 			Token: "",
-			User: dto.UserResponse{
-				ID:         existing.ID,
-				Email:      existing.Email,
-				FullName:   existing.FullName,
-				Timezone:   existing.Timezone,
-				IsVerified: existing.IsVerified,
-				CreatedAt:  existing.CreatedAt,
-			},
+			User:  toAuthUserResponse(existing),
 		}, nil
 	}
 
@@ -283,15 +283,7 @@ func (s *authService) Register(ctx context.Context, req *dto.RegisterRequest) (*
 	return &dto.AuthResponse{
 		Token:     "",
 		ExpiresAt: time.Time{},
-		User: dto.UserResponse{
-			ID:         created.ID,
-			Email:      created.Email,
-			FullName:   created.FullName,
-			AvatarURL:  created.AvatarURL,
-			Timezone:   created.Timezone,
-			IsVerified: created.IsVerified,
-			CreatedAt:  created.CreatedAt,
-		},
+		User:      toAuthUserResponse(created),
 	}, nil
 }
 
@@ -437,15 +429,7 @@ func (s *authService) RefreshToken(ctx context.Context, req *dto.RefreshTokenReq
 		Token:        newAccessToken,
 		RefreshToken: newRefreshToken,
 		ExpiresAt:    expiresAt,
-		User: dto.UserResponse{
-			ID:         user.ID,
-			Email:      user.Email,
-			FullName:   user.FullName,
-			AvatarURL:  user.AvatarURL,
-			Timezone:   user.Timezone,
-			IsVerified: user.IsVerified,
-			CreatedAt:  user.CreatedAt,
-		},
+		User:         toAuthUserResponse(user),
 	}, nil
 }
 

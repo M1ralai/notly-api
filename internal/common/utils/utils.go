@@ -109,6 +109,8 @@ func ReturnError(w http.ResponseWriter, code, message, details string) {
 		status = http.StatusUnauthorized
 	case "FORBIDDEN":
 		status = http.StatusForbidden
+	case "PREMIUM_REQUIRED":
+		status = http.StatusPaymentRequired
 	case "NOT_FOUND":
 		status = http.StatusNotFound
 	default:

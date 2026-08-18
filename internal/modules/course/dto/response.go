@@ -25,6 +25,7 @@ type CourseResponse struct {
 	UpdatedAt   time.Time            `json:"updated_at"`
 	Components  []*ComponentResponse `json:"components,omitempty"`
 	Schedules   []*ScheduleResponse  `json:"schedules,omitempty"`
+	Resources   []*ResourceResponse  `json:"resources,omitempty"`
 }
 
 type SemesterInfo struct {
@@ -60,6 +61,23 @@ type ScheduleResponse struct {
 	EndTime   string    `json:"end_time"`
 	Location  string    `json:"location,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+type ResourceResponse struct {
+	ID            int       `json:"id"`
+	CourseID      int       `json:"course_id"`
+	ComponentID   *int      `json:"component_id,omitempty"`
+	Title         string    `json:"title"`
+	Type          string    `json:"type"`
+	URL           string    `json:"url,omitempty"`
+	FilePath      string    `json:"file_path,omitempty"`
+	Description   string    `json:"description,omitempty"`
+	Tags          []string  `json:"tags,omitempty"`
+	IsPrimary     bool      `json:"is_primary"`
+	FileSizeBytes int64     `json:"file_size_bytes,omitempty"`
+	MimeType      string    `json:"mime_type,omitempty"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 func ToScheduleResponse(s *domain.Schedule) *ScheduleResponse {
@@ -107,6 +125,7 @@ func ToCourseResponse(c *domain.Course) *CourseResponse {
 		UpdatedAt:   c.UpdatedAt,
 		Components:  ToComponentResponseList(c.Components),
 		Schedules:   ToScheduleResponseList(c.Schedules),
+		Resources:   ToResourceResponseList(c.Resources),
 	}
 }
 
@@ -139,6 +158,39 @@ func ToComponentResponseList(components []*domain.Component) []*ComponentRespons
 	result := make([]*ComponentResponse, len(components))
 	for i, c := range components {
 		result[i] = ToComponentResponse(c)
+	}
+	return result
+}
+
+func ToResourceResponse(r *domain.Resource) *ResourceResponse {
+	if r == nil {
+		return nil
+	}
+	return &ResourceResponse{
+		ID:            r.ID,
+		CourseID:      r.CourseID,
+		ComponentID:   r.ComponentID,
+		Title:         r.Title,
+		Type:          r.Type,
+		URL:           r.URL,
+		FilePath:      r.FilePath,
+		Description:   r.Description,
+		Tags:          r.Tags,
+		IsPrimary:     r.IsPrimary,
+		FileSizeBytes: r.FileSizeBytes,
+		MimeType:      r.MimeType,
+		CreatedAt:     r.CreatedAt,
+		UpdatedAt:     r.UpdatedAt,
+	}
+}
+
+func ToResourceResponseList(resources []*domain.Resource) []*ResourceResponse {
+	if resources == nil {
+		return nil
+	}
+	result := make([]*ResourceResponse, len(resources))
+	for i, r := range resources {
+		result[i] = ToResourceResponse(r)
 	}
 	return result
 }

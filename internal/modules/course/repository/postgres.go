@@ -8,6 +8,7 @@ import (
 
 	"github.com/M1ralai/notly-api/internal/modules/course/domain"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 type postgresRepository struct {
@@ -414,5 +415,130 @@ func (r *postgresRepository) GetScheduleByID(ctx context.Context, id int) (*doma
 		return nil, err
 	}
 
+	return model.ToDomain(), nil
+}
+
+const resourceSelectColumns = `
+	id, course_id, component_id, title, type, url, file_path, description,
+	tags, is_primary, file_size_bytes, mime_type, created_at, updated_at`
+
+func (r *postgresRepository) CreateResource(ctx context.Context, resource *domain.Resource) (*domain.Resource, error) {
+	query := `
+		INSERT INTO course_resources (
+			course_id, component_id, title, type, url, file_path, description,
+			tags, is_primary, file_size_bytes, mime_type, created_at, updated_at
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+		RETURNING id, created_at, updated_at
+	`
+
+	now := time.Now()
+	model := FromDomainResource(resource)
+	err := r.db.QueryRowxContext(
+		ctx,
+		query,
+		model.CourseID,
+		model.ComponentID,
+		model.Title,
+		model.Type,
+		model.URL,
+		model.FilePath,
+		model.Description,
+		pq.Array([]string(model.Tags)),
+		model.IsPrimary,
+		model.FileSizeBytes,
+		model.MimeType,
+		now,
+		now,
+	).Scan(&model.ID, &model.CreatedAt, &model.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return model.ToDomain(), nil
+}
+
+func (r *postgresRepository) UpdateResource(ctx context.Context, resource *domain.Resource) error {
+	query := `
+		UPDATE course_resources
+		SET component_id = $1, title = $2, type = $3, url = $4, file_path = $5,
+		    description = $6, tags = $7, is_primary = $8, file_size_bytes = $9,
+		    mime_type = $10, updated_at = $11
+		WHERE id = $12
+	`
+
+	model := FromDomainResource(resource)
+	_, err := r.db.ExecContext(
+		ctx,
+		query,
+		model.ComponentID,
+		model.Title,
+		model.Type,
+		model.URL,
+		model.FilePath,
+		model.Description,
+		pq.Array([]string(model.Tags)),
+		model.IsPrimary,
+		model.FileSizeBytes,
+		model.MimeType,
+		time.Now(),
+		model.ID,
+	)
+	return err
+}
+
+func (r *postgresRepository) DeleteResource(ctx context.Context, id int) (*domain.Resource, error) {
+	var model ResourceModel
+	err := r.db.GetContext(
+		ctx,
+		&model,
+		`DELETE FROM course_resources WHERE id = $1 RETURNING `+resourceSelectColumns,
+		id,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return model.ToDomain(), nil
+}
+
+func (r *postgresRepository) GetResources(ctx context.Context, courseID int) ([]*domain.Resource, error) {
+	var models []ResourceModel
+	err := r.db.SelectContext(
+		ctx,
+		&models,
+		`SELECT `+resourceSelectColumns+`
+		 FROM course_resources
+		 WHERE course_id = $1
+		 ORDER BY is_primary DESC, created_at DESC`,
+		courseID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	resources := make([]*domain.Resource, len(models))
+	for i, m := range models {
+		resources[i] = m.ToDomain()
+	}
+	return resources, nil
+}
+
+func (r *postgresRepository) GetResourceByID(ctx context.Context, id int) (*domain.Resource, error) {
+	var model ResourceModel
+	err := r.db.GetContext(
+		ctx,
+		&model,
+		`SELECT `+resourceSelectColumns+` FROM course_resources WHERE id = $1`,
+		id,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
 	return model.ToDomain(), nil
 }

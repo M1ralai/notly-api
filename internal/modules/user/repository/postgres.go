@@ -18,6 +18,8 @@ func NewPostgresRepository(db *sqlx.DB) UserRepository {
 	return &postgresRepository{db: db}
 }
 
+const userSelectColumns = `id, email, password_hash, full_name, avatar_url, timezone, is_verified, is_premium, premium_plan, premium_expires_at, created_at, updated_at`
+
 func (r *postgresRepository) Create(ctx context.Context, user *domain.User) (*domain.User, error) {
 	query := `
 		INSERT INTO users (email, password_hash, full_name, avatar_url, timezone, created_at, updated_at)
@@ -48,7 +50,7 @@ func (r *postgresRepository) Create(ctx context.Context, user *domain.User) (*do
 
 func (r *postgresRepository) GetByID(ctx context.Context, id int) (*domain.User, error) {
 	query := `
-		SELECT id, email, password_hash, full_name, avatar_url, timezone, is_verified, created_at, updated_at
+		SELECT ` + userSelectColumns + `
 		FROM users
 		WHERE id = $1
 	`
@@ -67,7 +69,7 @@ func (r *postgresRepository) GetByID(ctx context.Context, id int) (*domain.User,
 
 func (r *postgresRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	query := `
-		SELECT id, email, password_hash, full_name, avatar_url, timezone, is_verified, created_at, updated_at
+		SELECT ` + userSelectColumns + `
 		FROM users
 		WHERE email = $1
 	`
@@ -86,7 +88,7 @@ func (r *postgresRepository) GetByEmail(ctx context.Context, email string) (*dom
 
 func (r *postgresRepository) GetAll(ctx context.Context) ([]*domain.User, error) {
 	query := `
-		SELECT id, email, password_hash, full_name, avatar_url, timezone, is_verified, created_at, updated_at
+		SELECT ` + userSelectColumns + `
 		FROM users
 		ORDER BY created_at DESC
 	`

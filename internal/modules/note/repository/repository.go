@@ -23,6 +23,7 @@ type NoteRepository interface {
 
 	// ── Attachments ───────────────────────────────────────────────────────────
 	AddAttachment(ctx context.Context, att *domain.NoteAttachment) (*domain.NoteAttachment, error)
+	GetAttachmentByID(ctx context.Context, attachmentID int) (*domain.NoteAttachment, error)
 	GetAttachments(ctx context.Context, noteID int) ([]*domain.NoteAttachment, error)
 	DeleteAttachment(ctx context.Context, attachmentID int) (*domain.NoteAttachment, error)
 

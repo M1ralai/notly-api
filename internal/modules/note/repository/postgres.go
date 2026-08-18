@@ -165,6 +165,23 @@ func (r *postgresNoteRepository) AddAttachment(ctx context.Context, att *domain.
 	return att, nil
 }
 
+func (r *postgresNoteRepository) GetAttachmentByID(ctx context.Context, attachmentID int) (*domain.NoteAttachment, error) {
+	m := &NoteAttachmentModel{}
+	err := r.db.GetContext(ctx, m,
+		`SELECT id, note_id, file_url, object_key, file_type, file_size_bytes, original_name, created_at
+		 FROM note_attachments
+		 WHERE id = $1`,
+		attachmentID,
+	)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("not found")
+	}
+	if err != nil {
+		return nil, fmt.Errorf("note.GetAttachmentByID: %w", err)
+	}
+	return m.ToDomain(), nil
+}
+
 func (r *postgresNoteRepository) GetAttachments(ctx context.Context, noteID int) ([]*domain.NoteAttachment, error) {
 	var models []*NoteAttachmentModel
 	err := r.db.SelectContext(ctx, &models,

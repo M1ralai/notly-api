@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/M1ralai/notly-api/internal/modules/course/domain"
+	"github.com/lib/pq"
 )
 
 type CourseModel struct {
@@ -154,6 +155,66 @@ type ScheduleModel struct {
 	NotificationType     string    `db:"notification_type"`
 	ReminderTime         int       `db:"reminder_time"`
 	CreatedAt            time.Time `db:"created_at"`
+}
+
+type ResourceModel struct {
+	ID            int            `db:"id"`
+	CourseID      int            `db:"course_id"`
+	ComponentID   *int           `db:"component_id"`
+	Title         string         `db:"title"`
+	Type          *string        `db:"type"`
+	URL           *string        `db:"url"`
+	FilePath      *string        `db:"file_path"`
+	Description   *string        `db:"description"`
+	Tags          pq.StringArray `db:"tags"`
+	IsPrimary     bool           `db:"is_primary"`
+	FileSizeBytes int64          `db:"file_size_bytes"`
+	MimeType      *string        `db:"mime_type"`
+	CreatedAt     time.Time      `db:"created_at"`
+	UpdatedAt     time.Time      `db:"updated_at"`
+}
+
+func (m *ResourceModel) ToDomain() *domain.Resource {
+	tags := []string(m.Tags)
+	if tags == nil {
+		tags = []string{}
+	}
+
+	return &domain.Resource{
+		ID:            m.ID,
+		CourseID:      m.CourseID,
+		ComponentID:   m.ComponentID,
+		Title:         m.Title,
+		Type:          derefString(m.Type),
+		URL:           derefString(m.URL),
+		FilePath:      derefString(m.FilePath),
+		Description:   derefString(m.Description),
+		Tags:          tags,
+		IsPrimary:     m.IsPrimary,
+		FileSizeBytes: m.FileSizeBytes,
+		MimeType:      derefString(m.MimeType),
+		CreatedAt:     m.CreatedAt,
+		UpdatedAt:     m.UpdatedAt,
+	}
+}
+
+func FromDomainResource(r *domain.Resource) *ResourceModel {
+	return &ResourceModel{
+		ID:            r.ID,
+		CourseID:      r.CourseID,
+		ComponentID:   r.ComponentID,
+		Title:         r.Title,
+		Type:          refString(r.Type),
+		URL:           refString(r.URL),
+		FilePath:      refString(r.FilePath),
+		Description:   refString(r.Description),
+		Tags:          pq.StringArray(r.Tags),
+		IsPrimary:     r.IsPrimary,
+		FileSizeBytes: r.FileSizeBytes,
+		MimeType:      refString(r.MimeType),
+		CreatedAt:     r.CreatedAt,
+		UpdatedAt:     r.UpdatedAt,
+	}
 }
 
 func (m *ScheduleModel) ToDomain() *domain.Schedule {

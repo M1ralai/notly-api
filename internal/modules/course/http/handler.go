@@ -2,15 +2,20 @@ package http
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/M1ralai/notly-api/internal/common/utils"
 	"github.com/M1ralai/notly-api/internal/common/validation"
 	"github.com/M1ralai/notly-api/internal/modules/course/dto"
 	"github.com/M1ralai/notly-api/internal/modules/course/service"
+	subscriptionService "github.com/M1ralai/notly-api/internal/modules/subscription/service"
 	"github.com/gorilla/mux"
 )
+
+const maxCourseResourceUploadSize = 32 << 20 // 32 MB
 
 type Handler struct {
 	service service.CourseService
@@ -32,6 +37,11 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/courses/{id}/schedules", h.GetSchedules).Methods("GET")
 	router.HandleFunc("/courses/schedules/{id}", h.UpdateSchedule).Methods("PUT", "PATCH")
 	router.HandleFunc("/courses/schedules/{id}", h.DeleteSchedule).Methods("DELETE")
+	router.HandleFunc("/courses/{id}/resources", h.GetResources).Methods("GET")
+	router.HandleFunc("/courses/{id}/resources", h.CreateResource).Methods("POST")
+	router.HandleFunc("/courses/{id}/resources/upload", h.UploadResourceFile).Methods("POST")
+	router.HandleFunc("/courses/resources/{id}", h.UpdateResource).Methods("PUT", "PATCH")
+	router.HandleFunc("/courses/resources/{id}", h.DeleteResource).Methods("DELETE")
 	router.HandleFunc("/courses/{id}", h.GetByID).Methods("GET")
 	router.HandleFunc("/courses/{id}", h.Update).Methods("PUT", "PATCH")
 	router.HandleFunc("/courses/{id}", h.Delete).Methods("DELETE")
@@ -39,6 +49,26 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 
 func (h *Handler) getUserID(r *http.Request) int {
 	return utils.GetUserIDFromContext(r.Context())
+}
+
+func handleCourseError(w http.ResponseWriter, err error, fallbackMessage string) {
+	if errors.Is(err, subscriptionService.ErrPremiumRequired) {
+		utils.ReturnError(w, "PREMIUM_REQUIRED", "Notly Pro required", err.Error())
+		return
+	}
+
+	switch err.Error() {
+	case "course not found", "resource not found":
+		utils.ReturnError(w, "NOT_FOUND", "Kaynak bulunamadı", err.Error())
+	case "unauthorized":
+		utils.ReturnError(w, "FORBIDDEN", "Bu işlem için yetkiniz yok", err.Error())
+	case "file upload required":
+		utils.ReturnError(w, "BAD_REQUEST", "Dosya kaynakları upload endpoint'i ile eklenmelidir", err.Error())
+	case "storage unavailable":
+		utils.ReturnError(w, "INTERNAL_ERROR", "Dosya depolama şu an hazır değil", err.Error())
+	default:
+		utils.ReturnError(w, "INTERNAL_ERROR", fallbackMessage, err.Error())
+	}
 }
 
 // @Summary Create
@@ -367,6 +397,209 @@ func (h *Handler) DeleteSchedule(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteJson(w, nil, http.StatusOK, "Schedule silindi")
+}
+
+// @Summary CreateResource
+// @Tags Course
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param id path int true "Course ID"
+// @Param request body dto.CreateResourceRequest true "Create Resource"
+// @Success 201 {object} dto.ResourceResponse
+// @Router /api/courses/{id}/resources [post]
+func (h *Handler) CreateResource(w http.ResponseWriter, r *http.Request) {
+	courseID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		utils.ReturnError(w, "BAD_REQUEST", "Geçersiz ders ID", err.Error())
+		return
+	}
+
+	var req dto.CreateResourceRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		utils.ReturnError(w, "BAD_REQUEST", "Geçersiz istek formatı", err.Error())
+		return
+	}
+	req.CourseID = courseID
+
+	if err := validation.Get().Struct(req); err != nil {
+		utils.ReturnError(w, "VALIDATION_ERROR", "Doğrulama hatası", validation.FormatErr(err))
+		return
+	}
+
+	resource, err := h.service.CreateResource(r.Context(), &req, h.getUserID(r))
+	if err != nil {
+		handleCourseError(w, err, "Kaynak oluşturulamadı")
+		return
+	}
+
+	utils.WriteJson(w, resource, http.StatusCreated, "Kaynak oluşturuldu")
+}
+
+// @Summary UploadResourceFile
+// @Tags Course
+// @Security BearerAuth
+// @Accept multipart/form-data
+// @Produce json
+// @Param id path int true "Course ID"
+// @Param file formData file true "File to upload"
+// @Success 201 {object} dto.ResourceResponse
+// @Router /api/courses/{id}/resources/upload [post]
+func (h *Handler) UploadResourceFile(w http.ResponseWriter, r *http.Request) {
+	courseID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		utils.ReturnError(w, "BAD_REQUEST", "Geçersiz ders ID", err.Error())
+		return
+	}
+
+	if err := r.ParseMultipartForm(maxCourseResourceUploadSize); err != nil {
+		utils.ReturnError(w, "BAD_REQUEST", "Dosya çok büyük veya form hatalı", err.Error())
+		return
+	}
+
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		utils.ReturnError(w, "BAD_REQUEST", "file alanı eksik", err.Error())
+		return
+	}
+	defer file.Close()
+
+	metadata := dto.CreateResourceRequest{
+		CourseID:    courseID,
+		Type:        "file",
+		Title:       strings.TrimSpace(r.FormValue("title")),
+		Description: strings.TrimSpace(r.FormValue("description")),
+		Tags:        parseResourceTags(r.FormValue("tags")),
+		IsPrimary:   r.FormValue("is_primary") == "true",
+	}
+	if componentID, ok := parseOptionalInt(r.FormValue("component_id")); ok {
+		metadata.ComponentID = &componentID
+	}
+
+	contentType := header.Header.Get("Content-Type")
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+
+	resource, err := h.service.UploadResourceFile(
+		r.Context(),
+		courseID,
+		h.getUserID(r),
+		file,
+		header.Filename,
+		contentType,
+		header.Size,
+		&metadata,
+	)
+	if err != nil {
+		handleCourseError(w, err, "Dosya yüklenemedi")
+		return
+	}
+
+	utils.WriteJson(w, resource, http.StatusCreated, "Dosya yüklendi")
+}
+
+// @Summary GetResources
+// @Tags Course
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "Course ID"
+// @Success 200 {array} dto.ResourceResponse
+// @Router /api/courses/{id}/resources [get]
+func (h *Handler) GetResources(w http.ResponseWriter, r *http.Request) {
+	courseID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		utils.ReturnError(w, "BAD_REQUEST", "Geçersiz ders ID", err.Error())
+		return
+	}
+
+	resources, err := h.service.GetResources(r.Context(), courseID, h.getUserID(r))
+	if err != nil {
+		handleCourseError(w, err, "Kaynaklar getirilemedi")
+		return
+	}
+
+	utils.WriteJson(w, resources, http.StatusOK, "Kaynaklar getirildi")
+}
+
+// @Summary UpdateResource
+// @Tags Course
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param id path int true "Resource ID"
+// @Param request body dto.UpdateResourceRequest true "Update Resource"
+// @Success 200 {object} dto.ResourceResponse
+// @Router /api/courses/resources/{id} [put]
+func (h *Handler) UpdateResource(w http.ResponseWriter, r *http.Request) {
+	resourceID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		utils.ReturnError(w, "BAD_REQUEST", "Geçersiz kaynak ID", err.Error())
+		return
+	}
+
+	var req dto.UpdateResourceRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		utils.ReturnError(w, "BAD_REQUEST", "Geçersiz istek formatı", err.Error())
+		return
+	}
+	if err := validation.Get().Struct(req); err != nil {
+		utils.ReturnError(w, "VALIDATION_ERROR", "Doğrulama hatası", validation.FormatErr(err))
+		return
+	}
+
+	resource, err := h.service.UpdateResource(r.Context(), resourceID, &req, h.getUserID(r))
+	if err != nil {
+		handleCourseError(w, err, "Kaynak güncellenemedi")
+		return
+	}
+
+	utils.WriteJson(w, resource, http.StatusOK, "Kaynak güncellendi")
+}
+
+// @Summary DeleteResource
+// @Tags Course
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "Resource ID"
+// @Success 200 {object} map[string]string
+// @Router /api/courses/resources/{id} [delete]
+func (h *Handler) DeleteResource(w http.ResponseWriter, r *http.Request) {
+	resourceID, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		utils.ReturnError(w, "BAD_REQUEST", "Geçersiz kaynak ID", err.Error())
+		return
+	}
+
+	if err := h.service.DeleteResource(r.Context(), resourceID, h.getUserID(r)); err != nil {
+		handleCourseError(w, err, "Kaynak silinemedi")
+		return
+	}
+
+	utils.WriteJson(w, nil, http.StatusOK, "Kaynak silindi")
+}
+
+func parseResourceTags(raw string) []string {
+	if raw == "" {
+		return nil
+	}
+	parts := strings.Split(raw, ",")
+	tags := make([]string, 0, len(parts))
+	for _, part := range parts {
+		tag := strings.TrimSpace(part)
+		if tag != "" {
+			tags = append(tags, tag)
+		}
+	}
+	return tags
+}
+
+func parseOptionalInt(raw string) (int, bool) {
+	if strings.TrimSpace(raw) == "" {
+		return 0, false
+	}
+	value, err := strconv.Atoi(raw)
+	return value, err == nil
 }
 
 // @Summary GetByID

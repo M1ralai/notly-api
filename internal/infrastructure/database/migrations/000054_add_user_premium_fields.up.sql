@@ -1,0 +1,6 @@
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS is_premium BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS premium_plan VARCHAR(32) NOT NULL DEFAULT 'free',
+  ADD COLUMN IF NOT EXISTS premium_expires_at TIMESTAMPTZ;
+
+CREATE INDEX IF NOT EXISTS idx_users_is_premium ON users(is_premium);

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"mime/multipart"
 
 	"github.com/M1ralai/notly-api/internal/modules/course/dto"
 )
@@ -25,4 +26,11 @@ type CourseService interface {
 	GetSchedules(ctx context.Context, courseID, userID int) ([]*dto.ScheduleResponse, error)
 	UpdateSchedule(ctx context.Context, id int, req *dto.UpdateScheduleRequest, userID int) (*dto.ScheduleResponse, error)
 	DeleteSchedule(ctx context.Context, id, userID int) error
+
+	// Resource methods
+	CreateResource(ctx context.Context, req *dto.CreateResourceRequest, userID int) (*dto.ResourceResponse, error)
+	UploadResourceFile(ctx context.Context, courseID, userID int, file multipart.File, filename, contentType string, size int64, metadata *dto.CreateResourceRequest) (*dto.ResourceResponse, error)
+	GetResources(ctx context.Context, courseID, userID int) ([]*dto.ResourceResponse, error)
+	UpdateResource(ctx context.Context, id int, req *dto.UpdateResourceRequest, userID int) (*dto.ResourceResponse, error)
+	DeleteResource(ctx context.Context, id, userID int) error
 }

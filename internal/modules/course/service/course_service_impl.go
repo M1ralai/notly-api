@@ -4,9 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mime/multipart"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
+
+	"github.com/M1ralai/notly-api/internal/adapters/storage"
 	"github.com/M1ralai/notly-api/internal/common/utils"
 	"github.com/M1ralai/notly-api/internal/infrastructure/logger"
 	calendarService "github.com/M1ralai/notly-api/internal/modules/calendar/service"
@@ -16,6 +21,7 @@ import (
 	"github.com/M1ralai/notly-api/internal/modules/notification"
 	notifService "github.com/M1ralai/notly-api/internal/modules/notification/service"
 	semesterRepo "github.com/M1ralai/notly-api/internal/modules/semester/repository"
+	subscriptionService "github.com/M1ralai/notly-api/internal/modules/subscription/service"
 	userRepo "github.com/M1ralai/notly-api/internal/modules/user/repository"
 )
 
@@ -58,6 +64,8 @@ type courseService struct {
 	calendarService calendarService.CalendarService
 	logger          *logger.ZapLogger
 	broadcaster     *notifService.Broadcaster
+	storage         storage.StorageProvider
+	subscription    subscriptionService.Service
 	userRepo        userRepo.UserRepository
 }
 
@@ -67,6 +75,8 @@ func NewCourseService(
 	calendarService calendarService.CalendarService,
 	logger *logger.ZapLogger,
 	broadcaster *notifService.Broadcaster,
+	storage storage.StorageProvider,
+	subscription subscriptionService.Service,
 	userRepo userRepo.UserRepository,
 ) CourseService {
 	return &courseService{
@@ -75,8 +85,43 @@ func NewCourseService(
 		calendarService: calendarService,
 		logger:          logger,
 		broadcaster:     broadcaster,
+		storage:         storage,
+		subscription:    subscription,
 		userRepo:        userRepo,
 	}
+}
+
+func (s *courseService) requireCourseOwnership(ctx context.Context, courseID, userID int) (*domain.Course, error) {
+	course, err := s.repo.GetByID(ctx, courseID)
+	if err != nil {
+		return nil, err
+	}
+	if course == nil {
+		return nil, errors.New("course not found")
+	}
+	if course.UserID != userID {
+		return nil, errors.New("unauthorized")
+	}
+	return course, nil
+}
+
+func (s *courseService) requirePremium(ctx context.Context, userID int) error {
+	if s.subscription == nil {
+		return nil
+	}
+	return s.subscription.RequirePremium(ctx, userID)
+}
+
+func (s *courseService) loadCourseResources(ctx context.Context, course *domain.Course) {
+	resources, err := s.repo.GetResources(ctx, course.ID)
+	if err != nil {
+		s.logger.Error("failed to load resources", err, map[string]interface{}{
+			"course_id": course.ID,
+		})
+		course.Resources = []*domain.Resource{}
+		return
+	}
+	course.Resources = resources
 }
 
 func (s *courseService) Create(ctx context.Context, req *dto.CreateCourseRequest, userID int) (*dto.CourseResponse, error) {
@@ -168,6 +213,7 @@ func (s *courseService) GetByID(ctx context.Context, id, userID int) (*dto.Cours
 		schedules = []*domain.Schedule{}
 	}
 	course.Schedules = schedules
+	s.loadCourseResources(ctx, course)
 
 	response := dto.ToCourseResponse(course)
 	s.enrichWithSemester(ctx, response)
@@ -219,6 +265,7 @@ func (s *courseService) GetAll(ctx context.Context, userID int) ([]*dto.CourseRe
 			schedules = []*domain.Schedule{}
 		}
 		course.Schedules = schedules
+		s.loadCourseResources(ctx, course)
 	}
 
 	responses := dto.ToCourseResponseList(courses)
@@ -253,6 +300,7 @@ func (s *courseService) GetActive(ctx context.Context, userID int) ([]*dto.Cours
 			schedules = []*domain.Schedule{}
 		}
 		course.Schedules = schedules
+		s.loadCourseResources(ctx, course)
 	}
 
 	responses := dto.ToCourseResponseList(courses)
@@ -1187,6 +1235,195 @@ func (s *courseService) DeleteSchedule(ctx context.Context, id, userID int) erro
 			"exclude_cid": excludeCID,
 			"action":      "WS_EVENT_PUBLISHED",
 		})
+	}
+
+	return nil
+}
+
+func (s *courseService) CreateResource(ctx context.Context, req *dto.CreateResourceRequest, userID int) (*dto.ResourceResponse, error) {
+	s.logger.Info("Creating course resource", map[string]interface{}{
+		"user_id":   userID,
+		"course_id": req.CourseID,
+		"type":      req.Type,
+		"action":    "CREATE_RESOURCE",
+	})
+
+	if _, err := s.requireCourseOwnership(ctx, req.CourseID, userID); err != nil {
+		return nil, err
+	}
+	if req.Type == "file" {
+		return nil, errors.New("file upload required")
+	}
+
+	now := time.Now()
+	resource := &domain.Resource{
+		CourseID:    req.CourseID,
+		ComponentID: req.ComponentID,
+		Title:       req.Title,
+		Type:        req.Type,
+		URL:         req.URL,
+		Description: req.Description,
+		Tags:        req.Tags,
+		IsPrimary:   req.IsPrimary,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}
+
+	created, err := s.repo.CreateResource(ctx, resource)
+	if err != nil {
+		s.logger.Error("failed to create resource", err, map[string]interface{}{
+			"user_id":   userID,
+			"course_id": req.CourseID,
+			"action":    "CREATE_RESOURCE_FAILED",
+		})
+		return nil, err
+	}
+
+	return dto.ToResourceResponse(created), nil
+}
+
+func (s *courseService) UploadResourceFile(
+	ctx context.Context,
+	courseID, userID int,
+	file multipart.File,
+	filename, contentType string,
+	size int64,
+	metadata *dto.CreateResourceRequest,
+) (*dto.ResourceResponse, error) {
+	if _, err := s.requireCourseOwnership(ctx, courseID, userID); err != nil {
+		return nil, err
+	}
+	if err := s.requirePremium(ctx, userID); err != nil {
+		return nil, err
+	}
+	if s.storage == nil {
+		return nil, errors.New("storage unavailable")
+	}
+
+	if metadata == nil {
+		metadata = &dto.CreateResourceRequest{}
+	}
+	title := metadata.Title
+	if title == "" {
+		title = filename
+	}
+
+	ext := filepath.Ext(filename)
+	objectKey := fmt.Sprintf("courses/%d/resources/%s%s", courseID, uuid.New().String(), ext)
+	url, err := s.storage.Upload(file, objectKey, contentType)
+	if err != nil {
+		return nil, fmt.Errorf("storage upload failed: %w", err)
+	}
+
+	now := time.Now()
+	resource := &domain.Resource{
+		CourseID:      courseID,
+		ComponentID:   metadata.ComponentID,
+		Title:         title,
+		Type:          "file",
+		URL:           url,
+		FilePath:      objectKey,
+		Description:   metadata.Description,
+		Tags:          metadata.Tags,
+		IsPrimary:     metadata.IsPrimary,
+		FileSizeBytes: size,
+		MimeType:      contentType,
+		CreatedAt:     now,
+		UpdatedAt:     now,
+	}
+
+	created, err := s.repo.CreateResource(ctx, resource)
+	if err != nil {
+		_ = s.storage.Delete(objectKey)
+		return nil, err
+	}
+
+	return dto.ToResourceResponse(created), nil
+}
+
+func (s *courseService) GetResources(ctx context.Context, courseID, userID int) ([]*dto.ResourceResponse, error) {
+	if _, err := s.requireCourseOwnership(ctx, courseID, userID); err != nil {
+		return nil, err
+	}
+	resources, err := s.repo.GetResources(ctx, courseID)
+	if err != nil {
+		return nil, err
+	}
+	return dto.ToResourceResponseList(resources), nil
+}
+
+func (s *courseService) UpdateResource(ctx context.Context, id int, req *dto.UpdateResourceRequest, userID int) (*dto.ResourceResponse, error) {
+	resource, err := s.repo.GetResourceByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if resource == nil {
+		return nil, errors.New("resource not found")
+	}
+	if _, err := s.requireCourseOwnership(ctx, resource.CourseID, userID); err != nil {
+		return nil, err
+	}
+
+	if req.Type != nil {
+		if *req.Type == "file" {
+			if err := s.requirePremium(ctx, userID); err != nil {
+				return nil, err
+			}
+		}
+		resource.Type = *req.Type
+	}
+	if resource.Type == "file" {
+		if err := s.requirePremium(ctx, userID); err != nil {
+			return nil, err
+		}
+	}
+	if req.ComponentID != nil {
+		resource.ComponentID = req.ComponentID
+	}
+	if req.Title != nil {
+		resource.Title = *req.Title
+	}
+	if req.URL != nil {
+		resource.URL = *req.URL
+	}
+	if req.Description != nil {
+		resource.Description = *req.Description
+	}
+	if req.Tags != nil {
+		resource.Tags = req.Tags
+	}
+	if req.IsPrimary != nil {
+		resource.IsPrimary = *req.IsPrimary
+	}
+	resource.UpdatedAt = time.Now()
+
+	if err := s.repo.UpdateResource(ctx, resource); err != nil {
+		return nil, err
+	}
+	return dto.ToResourceResponse(resource), nil
+}
+
+func (s *courseService) DeleteResource(ctx context.Context, id, userID int) error {
+	resource, err := s.repo.GetResourceByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if resource == nil {
+		return errors.New("resource not found")
+	}
+	if _, err := s.requireCourseOwnership(ctx, resource.CourseID, userID); err != nil {
+		return err
+	}
+
+	deleted, err := s.repo.DeleteResource(ctx, id)
+	if err != nil {
+		return err
+	}
+	if deleted == nil {
+		return errors.New("resource not found")
+	}
+	if deleted.FilePath != "" && s.storage != nil {
+		_ = s.storage.Delete(deleted.FilePath)
 	}
 
 	return nil

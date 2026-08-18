@@ -28,4 +28,10 @@ type CourseRepository interface {
 	DeleteSchedule(ctx context.Context, id int) error
 	GetSchedules(ctx context.Context, courseID int) ([]*domain.Schedule, error)
 	GetScheduleByID(ctx context.Context, id int) (*domain.Schedule, error)
+
+	CreateResource(ctx context.Context, resource *domain.Resource) (*domain.Resource, error)
+	UpdateResource(ctx context.Context, resource *domain.Resource) error
+	DeleteResource(ctx context.Context, id int) (*domain.Resource, error)
+	GetResources(ctx context.Context, courseID int) ([]*domain.Resource, error)
+	GetResourceByID(ctx context.Context, id int) (*domain.Resource, error)
 }

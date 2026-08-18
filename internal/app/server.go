@@ -70,6 +70,7 @@ import (
 	dashboardHttp "github.com/M1ralai/notly-api/internal/modules/dashboard/http"
 	dashboardService "github.com/M1ralai/notly-api/internal/modules/dashboard/service"
 
+	subscriptionService "github.com/M1ralai/notly-api/internal/modules/subscription/service"
 	syncHttp "github.com/M1ralai/notly-api/internal/modules/sync/http"
 	syncService "github.com/M1ralai/notly-api/internal/modules/sync/service"
 
@@ -137,6 +138,9 @@ func NewServer(db *sqlx.DB, zapLogger *logger.ZapLogger) *Server {
 	authSvc := authService.NewAuthService(userRepository, refreshTokenRepo, zapLogger, dbWrapper, emailService, jobPool, turnstileValidator)
 	authHandler := authHttp.NewHandler(authSvc)
 
+	// Subscription module
+	subscriptionSvc := subscriptionService.NewSubscriptionService(userRepository)
+
 	// LifeArea module
 	lifeareaRepository := lifeareaRepo.NewPostgresRepository(db)
 	lifeareaSvc := lifeareaService.NewLifeAreaService(lifeareaRepository, zapLogger, broadcaster)
@@ -171,9 +175,24 @@ func NewServer(db *sqlx.DB, zapLogger *logger.ZapLogger) *Server {
 	)
 	calendarHandler := calendarHttp.NewHandler(calendarSvc)
 
+	// Shared object storage adapter for Pro file features
+	minioAdapter, minioErr := storage.NewMinIOAdapter()
+	if minioErr != nil {
+		log.Printf("⚠ MinIO not available (%v) – file uploads disabled", minioErr)
+	}
+	var storageProvider storage.StorageProvider
+	if minioAdapter != nil {
+		if err := minioAdapter.EnsureBucket(); err != nil {
+			log.Printf("⚠ MinIO bucket init failed: %v", err)
+		} else {
+			storageProvider = minioAdapter
+			log.Println("✓ MinIO storage adapter ready")
+		}
+	}
+
 	// Course module (after calendar for sync injection)
 	courseRepository := courseRepo.NewPostgresRepository(db)
-	courseSvc := courseService.NewCourseService(courseRepository, semesterRepository, calendarSvc, zapLogger, broadcaster, userRepository)
+	courseSvc := courseService.NewCourseService(courseRepository, semesterRepository, calendarSvc, zapLogger, broadcaster, storageProvider, subscriptionSvc, userRepository)
 	courseHandler := courseHttp.NewHandler(courseSvc)
 
 	// Task module (after calendar for sync injection)
@@ -207,21 +226,8 @@ func NewServer(db *sqlx.DB, zapLogger *logger.ZapLogger) *Server {
 	pomodoroHandler := pomodoroHttp.NewHandler(pomodoroSvc)
 
 	// Note module (shared notes system)
-	minioAdapter, minioErr := storage.NewMinIOAdapter()
-	if minioErr != nil {
-		log.Printf("⚠ MinIO not available (%v) – file uploads disabled", minioErr)
-	}
-	var storageProvider storage.StorageProvider
-	if minioAdapter != nil {
-		if err := minioAdapter.EnsureBucket(); err != nil {
-			log.Printf("⚠ MinIO bucket init failed: %v", err)
-		} else {
-			storageProvider = minioAdapter
-			log.Println("✓ MinIO storage adapter ready")
-		}
-	}
 	noteRepository := noteRepo.NewPostgresRepository(db)
-	noteSvc := noteService.NewNoteService(noteRepository, storageProvider)
+	noteSvc := noteService.NewNoteService(noteRepository, storageProvider, subscriptionSvc)
 	noteHandler := noteHttp.NewHandler(noteSvc)
 
 	// Sync module (Aggregates Repositories)

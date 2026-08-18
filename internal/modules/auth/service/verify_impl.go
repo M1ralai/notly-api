@@ -96,15 +96,7 @@ func (s *authService) VerifyEmail(ctx context.Context, req *dto.VerifyEmailReque
 		Token:        token,
 		RefreshToken: refreshToken,
 		ExpiresAt:    expiresAtToken,
-		User: dto.UserResponse{
-			ID:         user.ID,
-			Email:      user.Email,
-			FullName:   user.FullName,
-			AvatarURL:  user.AvatarURL,
-			Timezone:   user.Timezone,
-			IsVerified: user.IsVerified,
-			CreatedAt:  user.CreatedAt,
-		},
+		User:         toAuthUserResponse(user),
 	}, nil
 }
 

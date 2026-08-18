@@ -10,11 +10,14 @@ type AuthResponse struct {
 }
 
 type UserResponse struct {
-	ID         int       `json:"id"`
-	Email      string    `json:"email"`
-	FullName   string    `json:"full_name,omitempty"`
-	AvatarURL  string    `json:"avatar_url,omitempty"`
-	Timezone   string    `json:"timezone"`
-	IsVerified bool      `json:"is_verified"`
-	CreatedAt  time.Time `json:"created_at"`
+	ID               int        `json:"id"`
+	Email            string     `json:"email"`
+	FullName         string     `json:"full_name,omitempty"`
+	AvatarURL        string     `json:"avatar_url,omitempty"`
+	Timezone         string     `json:"timezone"`
+	IsVerified       bool       `json:"is_verified"`
+	IsPremium        bool       `json:"is_premium"`
+	PremiumPlan      string     `json:"premium_plan"`
+	PremiumExpiresAt *time.Time `json:"premium_expires_at,omitempty"`
+	CreatedAt        time.Time  `json:"created_at"`
 }

@@ -14,16 +14,18 @@ import (
 	"github.com/M1ralai/notly-api/internal/modules/note/domain"
 	"github.com/M1ralai/notly-api/internal/modules/note/dto"
 	"github.com/M1ralai/notly-api/internal/modules/note/repository"
+	subscriptionService "github.com/M1ralai/notly-api/internal/modules/subscription/service"
 )
 
 type noteServiceImpl struct {
-	repo    repository.NoteRepository
-	storage storage.StorageProvider
+	repo         repository.NoteRepository
+	storage      storage.StorageProvider
+	subscription subscriptionService.Service
 }
 
 // NewNoteService wires together the repository and the storage provider.
-func NewNoteService(repo repository.NoteRepository, storage storage.StorageProvider) NoteService {
-	return &noteServiceImpl{repo: repo, storage: storage}
+func NewNoteService(repo repository.NoteRepository, storage storage.StorageProvider, subscription subscriptionService.Service) NoteService {
+	return &noteServiceImpl{repo: repo, storage: storage, subscription: subscription}
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -44,6 +46,7 @@ func (s *noteServiceImpl) ownerGuard(ctx context.Context, noteID, userID int) (*
 func toAttachmentResponse(a *domain.NoteAttachment) dto.AttachmentResponse {
 	return dto.AttachmentResponse{
 		ID:            a.ID,
+		NoteID:        a.NoteID,
 		FileURL:       a.FileURL,
 		FileType:      a.FileType,
 		FileSizeBytes: a.FileSizeBytes,
@@ -63,19 +66,19 @@ func toCollaboratorResponse(c *domain.NoteCollaborator) dto.CollaboratorResponse
 
 func noteToOwnerResponse(n *domain.Note, atts []*domain.NoteAttachment, cols []*domain.NoteCollaborator) *dto.NoteOwnerResponse {
 	r := &dto.NoteOwnerResponse{
-		ID:           n.ID,
-		UserID:       n.UserID,
-		Title:        n.Title,
-		Content:      n.Content,
-		IsPublic:     n.IsPublic,
-		ShareToken:   n.ShareToken,
-		ParentNoteID: n.ParentNoteID,
-		CourseID:     n.CourseID,
-		LifeAreaID:   n.LifeAreaID,
-		LinkedTaskID: n.LinkedTaskID,
-		CreatedAt:    n.CreatedAt,
-		UpdatedAt:    n.UpdatedAt,
-		Attachments:  []dto.AttachmentResponse{},
+		ID:            n.ID,
+		UserID:        n.UserID,
+		Title:         n.Title,
+		Content:       n.Content,
+		IsPublic:      n.IsPublic,
+		ShareToken:    n.ShareToken,
+		ParentNoteID:  n.ParentNoteID,
+		CourseID:      n.CourseID,
+		LifeAreaID:    n.LifeAreaID,
+		LinkedTaskID:  n.LinkedTaskID,
+		CreatedAt:     n.CreatedAt,
+		UpdatedAt:     n.UpdatedAt,
+		Attachments:   []dto.AttachmentResponse{},
 		Collaborators: []dto.CollaboratorResponse{},
 	}
 	for _, a := range atts {
@@ -188,6 +191,14 @@ func (s *noteServiceImpl) UploadAttachment(
 	if err != nil {
 		return nil, err
 	}
+	if s.subscription != nil {
+		if err := s.subscription.RequirePremium(ctx, userID); err != nil {
+			return nil, err
+		}
+	}
+	if s.storage == nil {
+		return nil, fmt.Errorf("storage unavailable")
+	}
 
 	// 2. Build a unique object key to prevent collisions
 	ext := filepath.Ext(filename)
@@ -221,25 +232,24 @@ func (s *noteServiceImpl) UploadAttachment(
 }
 
 func (s *noteServiceImpl) DeleteAttachment(ctx context.Context, attachmentID, userID int) error {
-	// Fetch attachment to get note_id and object_key
-	// We don't have a GetAttachmentByID, so we need a workaround:
-	// fetch the note via attachment through a query – here we rely on
-	// DeleteAttachment returning the record so we can verify ownership.
-	att, err := s.repo.DeleteAttachment(ctx, attachmentID)
+	att, err := s.repo.GetAttachmentByID(ctx, attachmentID)
 	if err != nil {
 		return fmt.Errorf("not found")
 	}
 
 	// Verify that the caller owns the parent note
-	note, err := s.repo.GetByID(ctx, att.NoteID)
-	if err != nil || note.UserID != userID {
-		// Reinsert would be complex; return unauthorized but the DB row is gone.
-		// In practice callers must own the note; the handler enforces this.
-		return fmt.Errorf("unauthorized")
+	if _, err := s.ownerGuard(ctx, att.NoteID, userID); err != nil {
+		return err
+	}
+
+	if _, err := s.repo.DeleteAttachment(ctx, attachmentID); err != nil {
+		return fmt.Errorf("not found")
 	}
 
 	// Remove from storage (best effort)
-	_ = s.storage.Delete(att.ObjectKey)
+	if s.storage != nil {
+		_ = s.storage.Delete(att.ObjectKey)
+	}
 	return nil
 }
 
