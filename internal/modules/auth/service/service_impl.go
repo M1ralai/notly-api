@@ -19,6 +19,7 @@ import (
 	"github.com/M1ralai/notly-api/internal/modules/auth/domain"
 	"github.com/M1ralai/notly-api/internal/modules/auth/dto"
 	authRepo "github.com/M1ralai/notly-api/internal/modules/auth/repository"
+	subscriptionService "github.com/M1ralai/notly-api/internal/modules/subscription/service"
 	userDomain "github.com/M1ralai/notly-api/internal/modules/user/domain"
 	userRepo "github.com/M1ralai/notly-api/internal/modules/user/repository"
 	"github.com/golang-jwt/jwt/v5"
@@ -33,6 +34,7 @@ type authService struct {
 	emailService       email.EmailService
 	workerPool         *jobs.WorkerPool
 	turnstileValidator *infrastructure.TurnstileValidator
+	subscription       subscriptionService.Service
 }
 
 func NewAuthService(
@@ -43,6 +45,7 @@ func NewAuthService(
 	emailService email.EmailService,
 	workerPool *jobs.WorkerPool,
 	turnstileValidator *infrastructure.TurnstileValidator,
+	subscription subscriptionService.Service,
 ) AuthService {
 	return &authService{
 		userRepo:           userRepo,
@@ -52,6 +55,7 @@ func NewAuthService(
 		emailService:       emailService,
 		workerPool:         workerPool,
 		turnstileValidator: turnstileValidator,
+		subscription:       subscription,
 	}
 }
 
@@ -65,7 +69,16 @@ type Claims struct {
 
 var ErrBotVerificationFailed = errors.New("bot verification failed")
 
-func toAuthUserResponse(user *userDomain.User) dto.UserResponse {
+func (s *authService) toAuthUserResponse(ctx context.Context, user *userDomain.User) (dto.UserResponse, error) {
+	status := subscriptionService.FreeStatus()
+	if s.subscription != nil {
+		var err error
+		status, err = s.subscription.GetPremiumStatus(ctx, user.ID)
+		if err != nil {
+			return dto.UserResponse{}, err
+		}
+	}
+
 	return dto.UserResponse{
 		ID:               user.ID,
 		Email:            user.Email,
@@ -73,11 +86,11 @@ func toAuthUserResponse(user *userDomain.User) dto.UserResponse {
 		AvatarURL:        user.AvatarURL,
 		Timezone:         user.Timezone,
 		IsVerified:       user.IsVerified,
-		IsPremium:        user.HasPremiumAccess(),
-		PremiumPlan:      user.PremiumPlan,
-		PremiumExpiresAt: user.PremiumExpiresAt,
+		IsPremium:        status.IsPremium,
+		PremiumPlan:      status.PremiumPlan,
+		PremiumExpiresAt: status.PremiumExpiresAt,
 		CreatedAt:        user.CreatedAt,
-	}
+	}, nil
 }
 
 func (s *authService) Login(ctx context.Context, req *dto.LoginRequest) (*dto.AuthResponse, error) {
@@ -125,11 +138,16 @@ func (s *authService) Login(ctx context.Context, req *dto.LoginRequest) (*dto.Au
 		"action":  "LOGIN",
 	})
 
+	userResponse, err := s.toAuthUserResponse(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
 	return &dto.AuthResponse{
 		Token:        token,
 		RefreshToken: refreshToken,
 		ExpiresAt:    expiresAt,
-		User:         toAuthUserResponse(user),
+		User:         userResponse,
 	}, nil
 }
 
@@ -206,10 +224,15 @@ func (s *authService) Register(ctx context.Context, req *dto.RegisterRequest) (*
 			"action":  "VERIFICATION_RESENT",
 		})
 
+		userResponse, err := s.toAuthUserResponse(ctx, existing)
+		if err != nil {
+			return nil, err
+		}
+
 		// Return response with empty token (user must verify first)
 		return &dto.AuthResponse{
 			Token: "",
-			User:  toAuthUserResponse(existing),
+			User:  userResponse,
 		}, nil
 	}
 
@@ -279,11 +302,16 @@ func (s *authService) Register(ctx context.Context, req *dto.RegisterRequest) (*
 		"action":  "REGISTER",
 	})
 
+	userResponse, err := s.toAuthUserResponse(ctx, created)
+	if err != nil {
+		return nil, err
+	}
+
 	// Return response WITHOUT token (user must verify first)
 	return &dto.AuthResponse{
 		Token:     "",
 		ExpiresAt: time.Time{},
-		User:      toAuthUserResponse(created),
+		User:      userResponse,
 	}, nil
 }
 
@@ -425,11 +453,16 @@ func (s *authService) RefreshToken(ctx context.Context, req *dto.RefreshTokenReq
 		"action":  "REFRESH_TOKEN",
 	})
 
+	userResponse, err := s.toAuthUserResponse(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
 	return &dto.AuthResponse{
 		Token:        newAccessToken,
 		RefreshToken: newRefreshToken,
 		ExpiresAt:    expiresAt,
-		User:         toAuthUserResponse(user),
+		User:         userResponse,
 	}, nil
 }
 

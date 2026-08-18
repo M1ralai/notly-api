@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/M1ralai/notly-api/internal/infrastructure/logger"
+	subscriptionService "github.com/M1ralai/notly-api/internal/modules/subscription/service"
 	"github.com/M1ralai/notly-api/internal/modules/user/domain"
 	"github.com/M1ralai/notly-api/internal/modules/user/dto"
 	"github.com/M1ralai/notly-api/internal/modules/user/repository"
@@ -13,15 +14,45 @@ import (
 )
 
 type userService struct {
-	repo   repository.UserRepository
-	logger *logger.ZapLogger
+	repo         repository.UserRepository
+	subscription subscriptionService.Service
+	logger       *logger.ZapLogger
 }
 
-func NewUserService(repo repository.UserRepository, logger *logger.ZapLogger) UserService {
+func NewUserService(repo repository.UserRepository, logger *logger.ZapLogger, subscription subscriptionService.Service) UserService {
 	return &userService{
-		repo:   repo,
-		logger: logger,
+		repo:         repo,
+		subscription: subscription,
+		logger:       logger,
 	}
+}
+
+func (s *userService) toResponse(ctx context.Context, user *domain.User) (*dto.UserResponse, error) {
+	resp := dto.ToUserResponse(user)
+	if s.subscription == nil {
+		return resp, nil
+	}
+
+	status, err := s.subscription.GetPremiumStatus(ctx, user.ID)
+	if err != nil {
+		return nil, err
+	}
+	resp.IsPremium = status.IsPremium
+	resp.PremiumPlan = status.PremiumPlan
+	resp.PremiumExpiresAt = status.PremiumExpiresAt
+	return resp, nil
+}
+
+func (s *userService) toResponseList(ctx context.Context, users []*domain.User) ([]*dto.UserResponse, error) {
+	result := make([]*dto.UserResponse, len(users))
+	for i, user := range users {
+		resp, err := s.toResponse(ctx, user)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = resp
+	}
+	return result, nil
 }
 
 func (s *userService) CreateUser(ctx context.Context, req *dto.CreateUserRequest) (*dto.UserResponse, error) {
@@ -73,7 +104,7 @@ func (s *userService) CreateUser(ctx context.Context, req *dto.CreateUserRequest
 		"action":  "CREATE_USER",
 	})
 
-	return dto.ToUserResponse(created), nil
+	return s.toResponse(ctx, created)
 }
 
 func (s *userService) GetUser(ctx context.Context, id int) (*dto.UserResponse, error) {
@@ -85,7 +116,7 @@ func (s *userService) GetUser(ctx context.Context, id int) (*dto.UserResponse, e
 		return nil, errors.New("user not found")
 	}
 
-	return dto.ToUserResponse(user), nil
+	return s.toResponse(ctx, user)
 }
 
 func (s *userService) GetUserByEmail(ctx context.Context, email string) (*dto.UserResponse, error) {
@@ -97,7 +128,7 @@ func (s *userService) GetUserByEmail(ctx context.Context, email string) (*dto.Us
 		return nil, errors.New("user not found")
 	}
 
-	return dto.ToUserResponse(user), nil
+	return s.toResponse(ctx, user)
 }
 
 func (s *userService) GetAllUsers(ctx context.Context) ([]*dto.UserResponse, error) {
@@ -106,7 +137,7 @@ func (s *userService) GetAllUsers(ctx context.Context) ([]*dto.UserResponse, err
 		return nil, err
 	}
 
-	return dto.ToUserResponseList(users), nil
+	return s.toResponseList(ctx, users)
 }
 
 func (s *userService) UpdateUser(ctx context.Context, id int, req *dto.UpdateUserRequest) (*dto.UserResponse, error) {
@@ -157,7 +188,7 @@ func (s *userService) UpdateUser(ctx context.Context, id int, req *dto.UpdateUse
 		"action":  "UPDATE_USER",
 	})
 
-	return dto.ToUserResponse(user), nil
+	return s.toResponse(ctx, user)
 }
 
 func (s *userService) DeleteUser(ctx context.Context, id int) error {

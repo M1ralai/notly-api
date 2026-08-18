@@ -70,6 +70,8 @@ import (
 	dashboardHttp "github.com/M1ralai/notly-api/internal/modules/dashboard/http"
 	dashboardService "github.com/M1ralai/notly-api/internal/modules/dashboard/service"
 
+	subscriptionHttp "github.com/M1ralai/notly-api/internal/modules/subscription/http"
+	subscriptionRepo "github.com/M1ralai/notly-api/internal/modules/subscription/repository"
 	subscriptionService "github.com/M1ralai/notly-api/internal/modules/subscription/service"
 	syncHttp "github.com/M1ralai/notly-api/internal/modules/sync/http"
 	syncService "github.com/M1ralai/notly-api/internal/modules/sync/service"
@@ -127,7 +129,13 @@ func NewServer(db *sqlx.DB, zapLogger *logger.ZapLogger) *Server {
 
 	// User module
 	userRepository := userRepo.NewPostgresRepository(db)
-	userSvc := userService.NewUserService(userRepository, zapLogger)
+
+	// Subscription module
+	subscriptionRepository := subscriptionRepo.NewPostgresRepository(db)
+	subscriptionSvc := subscriptionService.NewSubscriptionService(subscriptionRepository)
+	subscriptionHandler := subscriptionHttp.NewHandler(subscriptionSvc)
+
+	userSvc := userService.NewUserService(userRepository, zapLogger, subscriptionSvc)
 	userHandler := userHttp.NewHandler(userSvc)
 
 	// Auth module
@@ -135,11 +143,8 @@ func NewServer(db *sqlx.DB, zapLogger *logger.ZapLogger) *Server {
 	emailService := email.NewResendEmailService()
 	turnstileValidator := infrastructure.NewTurnstileValidator()
 	refreshTokenRepo := authRepo.NewPostgresRepository(db)
-	authSvc := authService.NewAuthService(userRepository, refreshTokenRepo, zapLogger, dbWrapper, emailService, jobPool, turnstileValidator)
+	authSvc := authService.NewAuthService(userRepository, refreshTokenRepo, zapLogger, dbWrapper, emailService, jobPool, turnstileValidator, subscriptionSvc)
 	authHandler := authHttp.NewHandler(authSvc)
-
-	// Subscription module
-	subscriptionSvc := subscriptionService.NewSubscriptionService(userRepository)
 
 	// LifeArea module
 	lifeareaRepository := lifeareaRepo.NewPostgresRepository(db)
@@ -302,6 +307,7 @@ func NewServer(db *sqlx.DB, zapLogger *logger.ZapLogger) *Server {
 	scheduleHandler.RegisterRoutes(api)
 	pomodoroHandler.RegisterRoutes(api)
 	dashboardHandler.RegisterRoutes(api)
+	subscriptionHandler.RegisterRoutes(api)
 	syncHandler.RegisterRoutes(api)
 	// Note module – protected routes
 	noteHandler.RegisterRoutes(api)

@@ -26,9 +26,9 @@ func ToUserResponse(u *domain.User) *UserResponse {
 		FullName:         u.FullName,
 		AvatarURL:        u.AvatarURL,
 		Timezone:         u.Timezone,
-		IsPremium:        u.HasPremiumAccess(),
-		PremiumPlan:      u.PremiumPlan,
-		PremiumExpiresAt: u.PremiumExpiresAt,
+		IsPremium:        false,
+		PremiumPlan:      "free",
+		PremiumExpiresAt: nil,
 		CreatedAt:        u.CreatedAt,
 		UpdatedAt:        u.UpdatedAt,
 	}

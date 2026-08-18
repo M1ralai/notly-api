@@ -18,7 +18,7 @@ func NewPostgresRepository(db *sqlx.DB) UserRepository {
 	return &postgresRepository{db: db}
 }
 
-const userSelectColumns = `id, email, password_hash, full_name, avatar_url, timezone, is_verified, is_premium, premium_plan, premium_expires_at, created_at, updated_at`
+const userSelectColumns = `id, email, password_hash, full_name, avatar_url, timezone, is_verified, created_at, updated_at`
 
 func (r *postgresRepository) Create(ctx context.Context, user *domain.User) (*domain.User, error) {
 	query := `

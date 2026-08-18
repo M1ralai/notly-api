@@ -92,11 +92,16 @@ func (s *authService) VerifyEmail(ctx context.Context, req *dto.VerifyEmailReque
 		"action":  "EMAIL_VERIFIED",
 	})
 
+	userResponse, err := s.toAuthUserResponse(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
 	return &dto.AuthResponse{
 		Token:        token,
 		RefreshToken: refreshToken,
 		ExpiresAt:    expiresAtToken,
-		User:         toAuthUserResponse(user),
+		User:         userResponse,
 	}, nil
 }
 
