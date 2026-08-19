@@ -257,6 +257,9 @@ func NewServer(db *sqlx.DB, zapLogger *logger.ZapLogger) *Server {
 	// Note module – public shared note route (no JWT)
 	noteHandler.RegisterPublicRoutes(router)
 
+	// Subscription module – public webhook routes (RevenueCat)
+	subscriptionHandler.RegisterPublicRoutes(router)
+
 	// WebSocket route - MUST be registered BEFORE middleware to avoid ResponseWriter wrapping
 	// WebSocket requires the original http.ResponseWriter to hijack the connection
 	router.HandleFunc("/ws", wsHandler.HandleConnection).Methods("GET")

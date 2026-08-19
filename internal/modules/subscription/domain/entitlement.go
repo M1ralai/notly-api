@@ -3,18 +3,27 @@ package domain
 import "time"
 
 const (
-	ProviderApple  = "apple"
-	ProviderGoogle = "google"
-	ProviderAdmin  = "admin"
+	ProviderApple      = "apple"
+	ProviderGoogle     = "google"
+	ProviderRevenueCat = "revenuecat"
+	ProviderStripe     = "stripe"
+	ProviderRCBilling  = "rc_billing"
+	ProviderAdmin      = "admin"
 
-	StatusActive      = "active"
-	StatusExpired     = "expired"
-	StatusCancelled   = "cancelled"
-	StatusRevoked     = "revoked"
-	StatusGracePeriod = "grace_period"
+	StatusActive       = "active"
+	StatusExpired      = "expired"
+	StatusCancelled    = "cancelled"
+	StatusRevoked      = "revoked"
+	StatusGracePeriod  = "grace_period"
+	StatusBillingIssue = "billing_issue"
+	StatusInTrial      = "in_trial"
 
 	ProductNotlyProMonthly = "notly_pro_monthly"
+	ProductNotlyProYearly  = "notly_pro_yearly"
 	PlanMonthly            = "monthly"
+	PlanYearly             = "yearly"
+	PlanAnnual             = "annual"
+	PlanLifetime           = "lifetime"
 )
 
 type Entitlement struct {
